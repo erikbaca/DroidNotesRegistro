@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "839037533388",
+    "project_id": "droidnotesfirebase",
+    "storage_bucket": "droidnotesfirebase.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:839037533388:android:93d9f14e6ab24dab085669",
+        "android_client_info": {
+          "package_name": "com.proyecto.droidnotes"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "839037533388-208u4t4p7um1f27ur5nq5u180a7vuadc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.proyecto.droidnotes",
+            "certificate_hash": "f26aa5184fc309ea2824bc847d5ee3c96296ca76"
+          }
+        },
+        {
+          "client_id": "839037533388-bduo7210kdldb96fnov4in46jqlm94u6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBzdQmrhF11htezDLNR8BIqzUWgbXZdUDc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "839037533388-bduo7210kdldb96fnov4in46jqlm94u6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
