@@ -14,7 +14,7 @@ import com.mancj.materialsearchbar.MaterialSearchBar;
 import com.proyecto.droidnotes.R;
 import com.proyecto.droidnotes.adapters.ViewPagerAdapter;
 import com.proyecto.droidnotes.fragments.ChatsFragments;
-import com.proyecto.droidnotes.fragments.ContacsFragment;
+import com.proyecto.droidnotes.fragments.ContactsFragment;
 import com.proyecto.droidnotes.fragments.PhotoFragment;
 import com.proyecto.droidnotes.fragments.StatusFragment;
 import com.proyecto.droidnotes.providers.AuthProvider;
@@ -30,7 +30,7 @@ public class HomeActivity extends AppCompatActivity implements MaterialSearchBar
 
     // AÑADIMOS LOS FRAGMENTOS QUE MOSTRAREMOS
     ChatsFragments mChatsFragment;
-    ContacsFragment mContactsFragment;
+    ContactsFragment mContactsFragment;
     StatusFragment mStatusFragment;
     PhotoFragment mPhotoFragment;
 
@@ -54,14 +54,14 @@ public class HomeActivity extends AppCompatActivity implements MaterialSearchBar
 
         // INSTANCIAMOS NUESTROS FRAGMENTS
         mChatsFragment = new ChatsFragments();
-        mContactsFragment = new ContacsFragment();
+        mContactsFragment = new ContactsFragment();
         mStatusFragment = new StatusFragment();
         mPhotoFragment = new PhotoFragment();
 
         adapter.addFragment(mPhotoFragment, "");
         adapter.addFragment(mChatsFragment, "CHATS");
-        adapter.addFragment(mContactsFragment, "CONTACTOS");
         adapter.addFragment(mStatusFragment, "ESTADOS");
+        adapter.addFragment(mContactsFragment, "CONTACTOS");
 
         mViewPager.setAdapter(adapter);
         mTabLayout.setupWithViewPager(mViewPager);

@@ -6,27 +6,25 @@ public class User {
     private String username;
     private String phone;
     private String image;
+    private String info;
 
     public User()
     {
 
     }
 
-    // Constructor con nuestro 4 campos
-    public User(String id, String username, String phone, String image) {
+    public User(String id, String username, String phone, String image, String info) {
         this.id = id;
         this.username = username;
         this.phone = phone;
         this.image = image;
+        this.info = info;
     }
 
-
-    // Get obtener los valores de una variable
     public String getId() {
         return id;
     }
 
-    // Set establecer valores a una variable
     public void setId(String id) {
         this.id = id;
     }
@@ -53,5 +51,13 @@ public class User {
 
     public void setImage(String image) {
         this.image = image;
+    }
+
+    public String getInfo() {
+        return info;
+    }
+
+    public void setInfo(String info) {
+        this.info = info;
     }
 }

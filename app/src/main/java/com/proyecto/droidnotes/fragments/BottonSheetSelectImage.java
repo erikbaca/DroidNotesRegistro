@@ -19,7 +19,7 @@ import com.proyecto.droidnotes.providers.AuthProvider;
 import com.proyecto.droidnotes.providers.ImageProvider;
 import com.proyecto.droidnotes.providers.UsersProvider;
 
-public class BottonShettSelectImage extends BottomSheetDialogFragment
+public class BottonSheetSelectImage extends BottomSheetDialogFragment
 {
 
     // VARIABLES GLOBALES ==========================================================================
@@ -33,13 +33,13 @@ public class BottonShettSelectImage extends BottomSheetDialogFragment
     // =============================================================================================
 
     // RECIBIREMOS LA URL DE LA IMAGEN
-    public static BottonShettSelectImage newIntence(String url)
+    public static BottonSheetSelectImage newIntence(String url)
     {
-     BottonShettSelectImage bottonShettSelectImage = new BottonShettSelectImage();
+     BottonSheetSelectImage bottonSheetSelectImage = new BottonSheetSelectImage();
      Bundle argumentos = new Bundle();
      argumentos.putString("image", url);
-     bottonShettSelectImage.setArguments(argumentos);
-     return bottonShettSelectImage;
+     bottonSheetSelectImage.setArguments(argumentos);
+     return bottonSheetSelectImage;
     }
 
     @Override
@@ -99,7 +99,7 @@ public class BottonShettSelectImage extends BottomSheetDialogFragment
                        public void onComplete(@NonNull Task<Void> task2) {
                           if (task2.isSuccessful())
                           {
-                              setImageDefault();
+                              //setImageDefault();
                               Toast.makeText(getContext(), "La imagen se elimino correctamente!!", Toast.LENGTH_SHORT).show();
                           }
                           else

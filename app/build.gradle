@@ -42,12 +42,13 @@ dependencies {
     // utlizar las funcionalidades de Firebase
     //implementation platform('com.google.firebase:firebase-bom:30.2.0')
     implementation 'com.google.firebase:firebase-firestore:24.2.1'
+    // CLOUD FIRESTORE y AUTENTICACION =============================================================
     implementation 'com.google.firebase:firebase-auth:19.3.2'
+    implementation 'com.firebaseui:firebase-ui-firestore:6.2.1'
+    // =============================================================================================
     //imagen Redondeada
     implementation 'de.hdodenhof:circleimageview:3.1.0'
-    // Gallery
     implementation  'com.fxn769:pix:1.5.6'
-    //Comprimir las imagenes
     implementation 'id.zelory:compressor:2.1.1'
     // Storage
     implementation 'com.google.firebase:firebase-storage:20.0.1'

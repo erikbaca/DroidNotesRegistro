@@ -1,6 +1,7 @@
 package com.proyecto.droidnotes.activities;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -10,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,9 +23,14 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.storage.UploadTask;
 import com.proyecto.droidnotes.R;
-import com.proyecto.droidnotes.fragments.BottonShettSelectImage;
+import com.proyecto.droidnotes.fragments.BottonSheetInfo;
+import com.proyecto.droidnotes.fragments.BottonSheetSelectImage;
+import com.proyecto.droidnotes.fragments.BottonSheetUsername;
 import com.proyecto.droidnotes.models.User;
 import com.proyecto.droidnotes.providers.AuthProvider;
 import com.proyecto.droidnotes.providers.ImageProvider;
@@ -38,22 +45,28 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    // VARIABLES GLOBALES ============================
+    // VARIABLES GLOBALES ==========================================================================
     FloatingActionButton mFabSelectImage;
-    BottonShettSelectImage mBottonSheetSelectImage;
+    BottonSheetSelectImage mBottonSheetSelectImage;
+    BottonSheetUsername mBottonSheetUsername;
+    BottonSheetInfo mBottonSheetInfo;
 
     UsersProvider mUsersProvider;
     AuthProvider mAuthProvider;
     ImageProvider mImageProvider;
-    TextView mTextViewUsername, mTextViewPhone;
+    TextView mTextViewUsername, mTextViewPhone, mTextViewInfo;
     CircleImageView mCircleImageProfile;
+    ImageView mImageViewEditUsername;
+    ImageView mImageViewEditInfo;
 
     User mUser;
     Options mOptions;
     // Arreglo que almacene las url de las imagenes que seleccionemos
     ArrayList<String> mReturnValues = new ArrayList<>();
     File mImageFile;
-    // ===============================================
+
+    ListenerRegistration mListener;
+    // =============================================================================================
 
     // EVENTO ONCREATE
     @Override
@@ -69,7 +82,12 @@ public class ProfileActivity extends AppCompatActivity {
 
         mTextViewUsername = findViewById(R.id.textViewUsername);
         mTextViewPhone = findViewById(R.id.textViewPhone);
+        mTextViewInfo = findViewById(R.id.textViewInfo);
+
         mCircleImageProfile = findViewById(R.id.circleImageProfile);
+        mImageViewEditUsername = findViewById(R.id.imageViewEditUsername);
+        mImageViewEditInfo = findViewById(R.id.imageViewEditInfo);
+
 
         mOptions = Options.init()
                 .setRequestCode(100)                                           //Request code for activity results
@@ -85,6 +103,8 @@ public class ProfileActivity extends AppCompatActivity {
 
         mFabSelectImage = findViewById(R.id.fabSelectImage);
         // =========================================================================================
+
+
         mFabSelectImage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -92,44 +112,100 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
 
+        mImageViewEditUsername.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openBottonSheetUsername();
+            }
+        });
+
+
+        //EVENTO ONCLICK PARA LA INFORMACION
+        mImageViewEditInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openBottonSheetEditInfo();
+            }
+        });
+
         getUserInfo();
     }
 
 
-    // METODO PARA RETORNAR EL DOCUMENTO QUE QUEREMOS TRAER DE FIREBASE
-    private void getUserInfo() {
-        mUsersProvider.getUserInfo(mAuthProvider.getId()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
-            @Override
-            public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if (documentSnapshot.exists()) {
-                    // OBTENER TODA LA INFORMACION A TRAVES DEL PACKAGE MODELO
-                    mUser = documentSnapshot.toObject(User.class);
-                    mTextViewUsername.setText(mUser.getUsername());
-                    mTextViewPhone.setText(mUser.getPhone());
+    // ELIMINAMOS EL ESCUCHADOR DE EVENTOS EN TIEMPO REAL QUE SE MANEJA EN EL ADDSNAPSHOTS
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (mListener != null){
+            mListener.remove();
+        }
 
-                    if (mUser.getImage() != null) {
-                        if (!mUser.getImage().equals("")) {
-                            // Mostrar nuestra imagen en un objeto
-                            Picasso.with(ProfileActivity.this).load(mUser.getImage()).into(mCircleImageProfile);
+    }
+
+    // METODO PARA RETORNAR EL DOCUMENTO QUE QUEREMOS TRAER DE FIREBASE
+    // FUNCIONALIDADES EN TIEMPO REAL EN EL PERFIL
+    private void getUserInfo() {
+       mListener = mUsersProvider.getUserInfo(mAuthProvider.getId()).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            // ACTUALIZAR EN TIEMPO REAL EL NOMBRE DEL USUARIO EN PROFILE_ACTIVITY
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException error) {
+                if (documentSnapshot != null)
+                {
+                    if (documentSnapshot.exists()) {
+                        // OBTENER TODA LA INFORMACION A TRAVES DEL PACKAGE MODELO
+                        mUser = documentSnapshot.toObject(User.class);
+                        mTextViewUsername.setText(mUser.getUsername());
+                        mTextViewPhone.setText(mUser.getPhone());
+                        mTextViewInfo.setText(mUser.getInfo());
+
+                        if (mUser.getImage() != null) {
+                            if (!mUser.getImage().equals("")) {
+                                // Mostrar nuestra imagen en un objeto
+                                Picasso.with(ProfileActivity.this).load(mUser.getImage()).into(mCircleImageProfile);
+                            }
+                            else{
+                             setImageDefault();
+                            }
+                        }
+                        else {
+                            setImageDefault();
                         }
                     }
                 }
-
             }
         });
     }
 
+
     // CONFIGURACION PARA MOSTRAR EL BOTON SHEET SEA PARA ELIMINAR FOTO O SELECCIONAR
     private void openBottonSheetSelectImage() {
         if (mUser != null) {
-            mBottonSheetSelectImage = BottonShettSelectImage.newIntence(mUser.getImage());
+            mBottonSheetSelectImage = BottonSheetSelectImage.newIntence(mUser.getImage());
             mBottonSheetSelectImage.show(getSupportFragmentManager(), mBottonSheetSelectImage.getTag());
         } else {
             Toast.makeText(this, "La informacion no se pudo cargar :(", Toast.LENGTH_SHORT).show();
         }
-
-
     }
+
+    private void openBottonSheetEditInfo() {
+        if (mUser != null) {
+            mBottonSheetInfo = BottonSheetInfo.newIntence(mUser.getInfo());
+            mBottonSheetInfo.show(getSupportFragmentManager(), mBottonSheetInfo.getTag());
+        } else {
+            Toast.makeText(this, "La informacion no se pudo cargar :(", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+
+    private void openBottonSheetUsername() {
+        if (mUser != null) {
+            mBottonSheetUsername = BottonSheetUsername.newIntence(mUser.getUsername());
+            mBottonSheetUsername.show(getSupportFragmentManager(), mBottonSheetUsername.getTag());
+        } else {
+            Toast.makeText(this, "La informacion no se pudo cargar :(", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 
 
     // IMAGE =======================================================================================

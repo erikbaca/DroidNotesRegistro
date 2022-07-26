@@ -4,6 +4,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.proyecto.droidnotes.models.User;
 
 import java.util.Collection;
@@ -20,11 +21,17 @@ public class UsersProvider {
         mCollection = FirebaseFirestore.getInstance().collection("Users");
     }
 
-    //Metodo para verificar si el usuario existe
+    //METODO QUE RETORNA LOS DATOS DE UN USUARIO A TRAVES DEL ID
     public DocumentReference getUserInfo(String id)
     {
       return mCollection.document(id);
     }
+
+    // METODO PARA ORDENAR LA LISTA POR NOMBRE
+    public Query getAllUserByname(){
+        return mCollection.orderBy("username");
+    }
+
 
     //Metodo que permita almacenar un usuario en la BDD
     public Task<Void> create(User user)
@@ -49,6 +56,22 @@ public class UsersProvider {
         map.put("image", url);
         return mCollection.document(id).update(map);
     }
+
+    // METODO PARA ACTUALIZAR EL USUARIOS
+    public Task<Void> updateUsername(String id, String username)
+    {
+        Map<String, Object> map = new HashMap<>();
+        map.put("username", username);
+        return mCollection.document(id).update(map);
+    }
+
+    public Task<Void> updateInfo(String id, String info)
+    {
+        Map<String, Object> map = new HashMap<>();
+        map.put("info", info);
+        return mCollection.document(id).update(map);
+    }
+
 
 
 
