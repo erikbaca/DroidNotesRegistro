@@ -3,64 +3,96 @@ package com.proyecto.droidnotes.fragments;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.google.firebase.firestore.Query;
 import com.proyecto.droidnotes.R;
+import com.proyecto.droidnotes.adapters.ChatsAdapter;
+import com.proyecto.droidnotes.adapters.ContactsAdapter;
+import com.proyecto.droidnotes.models.Chat;
+import com.proyecto.droidnotes.models.User;
+import com.proyecto.droidnotes.providers.AuthProvider;
+import com.proyecto.droidnotes.providers.ChatsProvider;
+import com.proyecto.droidnotes.providers.UsersProvider;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link ChatsFragments#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class ChatsFragments extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    View mView;
+    RecyclerView mRecyclerViewChats;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    ChatsAdapter mAdapter;
+
+    UsersProvider mUsersProvider;
+    AuthProvider mAuthProvider;
+    ChatsProvider mChatsProvider;
+    // =============================================================================================
 
     public ChatsFragments() {
-        // Required empty public constructor
+
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment ChatsFragments.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static ChatsFragments newInstance(String param1, String param2) {
-        ChatsFragments fragment = new ChatsFragments();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
 
+    // METODO DONDE SE INSTANCIA LA VISTA QUE ESTAMOS UTILIZANDO
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_chats_fragments, container, false);
+        mView = inflater.inflate(R.layout.fragment_chats, container, false);
+        // INSTANCIAS DE VARIABLES =================================================================
+        mRecyclerViewChats = mView.findViewById(R.id.recyclerViewChats);
+
+        mAuthProvider = new AuthProvider();
+        mUsersProvider = new UsersProvider();
+
+        mChatsProvider = new ChatsProvider();
+
+        // ==========================================================================================
+
+        //PARA QUE LO ELEMENTOS SE POSICIONEN UNO DEBAJO DEL OTRO
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        mRecyclerViewChats.setLayoutManager(linearLayoutManager);
+
+        return  mView;
+    }
+
+
+    // FIREBASE UI /NOS PERMITE LISTAR LOS DATOS
+    // METODO DEL CICLO DE VIDA onStart
+    @Override
+    public void onStart() {
+        super.onStart();
+        // CONSULTA A LA BASE DE DATOS
+        Query query = mChatsProvider.getUserChats(mAuthProvider.getId());
+        FirestoreRecyclerOptions<Chat> options = new FirestoreRecyclerOptions.Builder<Chat>()
+                .setQuery(query, Chat.class)
+                .build();
+
+        mAdapter = new ChatsAdapter(options, getContext());
+        mRecyclerViewChats.setAdapter(mAdapter);
+        // QUE EL ADAPTER ESCUCHE LOS CAMBIOS EN TIEMPO REAL
+        mAdapter.startListening();
+    }
+
+
+    // DETENER EL METODO ONSTART
+    @Override
+    public void onStop() {
+        super.onStop();
+        mAdapter.stopListening();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if (mAdapter.getListener() != null){
+            mAdapter.getListener().remove();
+        }
     }
 }

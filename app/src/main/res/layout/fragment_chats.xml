@@ -5,11 +5,18 @@
     android:layout_height="match_parent"
     tools:context=".fragments.ChatsFragments">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Chats FRAGMENTS"
-        android:gravity="center"/>
+        android:orientation="vertical">
+
+        <!--        LISTAR LOS ELEMENTOS -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewChats"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+
+    </LinearLayout>
 
 </FrameLayout>

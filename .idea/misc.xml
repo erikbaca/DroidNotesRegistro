@@ -3,6 +3,8 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/drawable/bubble_corner_left.xml" value="0.111" />
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/drawable/bubble_corner_rigth.xml" value="0.111" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/drawable/custom_edit_text.xml" value="0.1105" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/drawable/ic_launcher_background.xml" value="0.1" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/drawable/ic_wifi.xml" value="0.1" />
@@ -18,8 +20,11 @@
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/botton_sheet_info.xml" value="0.14447463768115942" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/botton_sheet_select_image.xml" value="0.14447463768115942" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/botton_sheet_username_image.xml" value="0.25" />
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/cardview_chats.xml" value="0.25" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/cardview_contacts.xml" value="0.14447463768115942" />
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/cardview_message.xml" value="0.2674050632911392" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/chat_toolbar.xml" value="0.21" />
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/fragment_chats.xml" value="0.14628623188405798" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/fragment_chats_fragments.xml" value="0.14447463768115942" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/fragment_contacs.xml" value="0.14447463768115942" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/layout/fragment_photo.xml" value="0.14447463768115942" />

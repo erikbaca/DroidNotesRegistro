@@ -15,6 +15,7 @@ import com.google.firebase.firestore.Query;
 import com.proyecto.droidnotes.R;
 import com.proyecto.droidnotes.adapters.ContactsAdapter;
 import com.proyecto.droidnotes.models.User;
+import com.proyecto.droidnotes.providers.AuthProvider;
 import com.proyecto.droidnotes.providers.UsersProvider;
 
 
@@ -27,6 +28,7 @@ public class ContactsFragment extends Fragment {
 
     ContactsAdapter mAdapter;
 
+    AuthProvider mAuthProvider;
     UsersProvider mUsersProvider;
     // =============================================================================================
 
@@ -44,6 +46,7 @@ public class ContactsFragment extends Fragment {
         // INSTANCIAS DE VARIABLES =================================================================
         mRecyclerViewContacts = mView.findViewById(R.id.recyclerViewContacts);
         mUsersProvider = new UsersProvider();
+        mAuthProvider = new AuthProvider();
 
        // ==========================================================================================
 
