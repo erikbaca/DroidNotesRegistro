@@ -23,6 +23,7 @@
             android:layout_height="wrap_content"
             android:text="Nuevo Mensaje.."
             android:textSize="15dp"
+            android:layout_marginRight="15dp"
             android:textColor="@color/black"/>
 
         <LinearLayout
@@ -37,7 +38,7 @@
                 android:layout_height="wrap_content"
                 android:text="4:00 pm"
                 android:textSize="10dp"
-                android:textColor="@color/colorGrayDark"/>
+                android:textColor="@color/colorBlack"/>
 
             <ImageView
                 android:id="@+id/imageViewCheck"

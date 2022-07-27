@@ -7,7 +7,11 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.media.Image;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -18,6 +22,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.firestore.FirestoreRecyclerOptions;
+import com.fxn.pix.Options;
+import com.fxn.pix.Pix;
+import com.fxn.utility.PermUtil;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
@@ -38,6 +45,7 @@ import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -61,11 +69,17 @@ public class ChatActivity extends AppCompatActivity {
     // MESSAGE
     EditText mEditextMessage;
     ImageView mImageViewSend;
+    // ==================
+
+    ImageView mImageViewSelectPictures;
 
     MessagesAdapter mAdapter;
     RecyclerView mRecyclerViewMessages;
     LinearLayoutManager mLinearLayoutManager;
 
+    Options mOptions;
+    // Arreglo que almacene las url de las imagenes que seleccionemos
+    ArrayList<String> mReturnValues = new ArrayList<>();
     // =============================================================================================
 
     @Override
@@ -85,9 +99,25 @@ public class ChatActivity extends AppCompatActivity {
         mImageViewSend = findViewById(R.id.imageViewSend);
         mRecyclerViewMessages = findViewById(R.id.recyclerViewMessages);
 
+        mImageViewSelectPictures = findViewById(R.id.imageViewSelectPictures);
+
+
         // LA INFORMACION QUE SE MOSTRARA SE REFLEJARA UNA DEBAJO DEL OTRO
         mLinearLayoutManager = new LinearLayoutManager(ChatActivity.this);
+        mLinearLayoutManager.setStackFromEnd(true);
         mRecyclerViewMessages.setLayoutManager(mLinearLayoutManager);
+
+        mOptions = Options.init()
+                .setRequestCode(100)                                           //Request code for activity results
+                .setCount(5)                                                   //Number of images to restict selection count
+                .setFrontfacing(false)                                         //Front Facing camera on start
+                .setPreSelectedUrls(mReturnValues)                            //Pre selected Image Urls
+                .setExcludeVideos(true)
+                .setSpanCount(4)                                               //Span count for gallery min 1 & max 5
+                .setMode(Options.Mode.All)                                     //Option to select only pictures or videos or both
+                .setVideoDurationLimitinSeconds(0)                            //Duration for video recording
+                .setScreenOrientation(Options.SCREEN_ORIENTATION_PORTRAIT)     //Orientaion
+                .setPath("/pix/images");                                       //Custom Path For media Storage
 
 
         // =========================================================================================
@@ -105,32 +135,42 @@ public class ChatActivity extends AppCompatActivity {
                 createMessage();
             }
         });
+
+
+        // AL SELECCIONAR LA IMAGEN ABRIRA LA SELECCION DE IMAGENES
+        mImageViewSelectPictures.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startPix();
+            }
+        });
+
     }
 
     //  INSTANCIAR EL ADAPTER =================================================
 
+    // SE EJECUTA AL ABRIR EL ACTIVITY
     @Override
     protected void onStart() {
         super.onStart();
-
-        // CONSULTA A LA BASE DE DATOS
-        Query query = mMessageProvider.getMessageByChat(mExtraIdChat);
-        FirestoreRecyclerOptions<Message> options = new FirestoreRecyclerOptions.Builder<Message>()
-                .setQuery(query, Message.class)
-                .build();
-
-        mAdapter = new MessagesAdapter(options, ChatActivity.this);
-        mRecyclerViewMessages.setAdapter(mAdapter);
-        // QUE EL ADAPTER ESCUCHE LOS CAMBIOS EN TIEMPO REAL
-        mAdapter.startListening();
-
-
+        if (mAdapter != null){
+            mAdapter.startListening();
+        }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        mAdapter.stopListening();
+        if (mAdapter != null){
+            mAdapter.stopListening();
+        }
+
+    }
+
+    //INICIALIZA NUESTRA LIBRERIA PARA SELECCIONAR LA IMAGEN
+    private void startPix()
+    {
+        Pix.start(ChatActivity.this, mOptions);
     }
 
     // ========================================================================
@@ -158,7 +198,10 @@ public class ChatActivity extends AppCompatActivity {
                 @Override
                 public void onSuccess(Void unused) {
                     mEditextMessage.setText("");
-//                    Toast.makeText(ChatActivity.this, "El mensaje se creo correctamente", Toast.LENGTH_SHORT).show();
+                    if (mAdapter != null){
+                        mAdapter.notifyDataSetChanged();
+//                        // Toast.makeText(ChatActivity.this, "El mensaje se creo correctamente", Toast.LENGTH_SHORT).show();
+                    }
                 }
             });
         }
@@ -179,8 +222,57 @@ public class ChatActivity extends AppCompatActivity {
                     else {
                         //OTENEMOS EL ID DEL CHAT
                         mExtraIdChat = queryDocumentSnapshots.getDocuments().get(0).getId();
+                        getMessageByChat();
+                        updateStatus();
 //                        Toast.makeText(ChatActivity.this, "El chat ya existe entre estos dos usuarios", Toast.LENGTH_SHORT).show();
                     }
+                }
+            }
+        });
+    }
+
+    private void updateStatus() {
+        mMessageProvider.getMessageNotRead(mExtraIdChat).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+
+                for (DocumentSnapshot document: queryDocumentSnapshots.getDocuments()){
+                    Message message = document.toObject(Message.class);
+
+                    // UNICAMENTE VALIDAR QUE ACTUALICE EL ESTADO DE LOS MENSAJES QUE ME ENVIAn
+                    if (!message.getIdSender().equals(mAuthProvider.getId())){
+                        mMessageProvider.updateStatus(message.getId(), "VISTO");
+                    }
+                }
+            }
+        });
+    }
+
+    // METODO PARA OBTENER LOS MENSAJES
+    private void getMessageByChat() {
+        // CONSULTA A LA BASE DE DATOS
+        Query query = mMessageProvider.getMessageByChat(mExtraIdChat);
+        FirestoreRecyclerOptions<Message> options = new FirestoreRecyclerOptions.Builder<Message>()
+                .setQuery(query, Message.class)
+                .build();
+
+        mAdapter = new MessagesAdapter(options, ChatActivity.this);
+        mRecyclerViewMessages.setAdapter(mAdapter);
+        // QUE EL ADAPTER ESCUCHE LOS CAMBIOS EN TIEMPO REAL
+        mAdapter.startListening();
+
+        // METODO PARA SABER SI SE CREO UN MENSAJE NUEVO EN LA BDD
+        mAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                super.onItemRangeInserted(positionStart, itemCount);
+                //CONFIGURACIONES
+                updateStatus();
+                int numberMessage = mAdapter.getItemCount();
+                int LastMessagePosition = mLinearLayoutManager.findLastCompletelyVisibleItemPosition();
+
+                if (LastMessagePosition == -1 || (positionStart >= (numberMessage -1) && LastMessagePosition == (positionStart -1))){
+                    mRecyclerViewMessages.scrollToPosition(positionStart);
                 }
             }
         });
@@ -203,6 +295,8 @@ public class ChatActivity extends AppCompatActivity {
         mChatsProvider.create(chat).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
+                // LLAMAMOS AL METODO OBTENER MENSAJES POR CHAT
+                getMessageByChat();
 //                Toast.makeText(ChatActivity.this, "El chat se creo correctamente", Toast.LENGTH_SHORT).show();
             }
         });
@@ -258,4 +352,34 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
     }
+
+    // NOS RETORNA LAS IMAGENES QUE SELECCIONAMOS Y ADEMAS LOS PERMISOS=========================================
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK && requestCode == 100) {
+            mReturnValues = data.getStringArrayListExtra(Pix.IMAGE_RESULTS);
+            Intent intent = new Intent(ChatActivity.this, ConfirmImageSendActivity.class);
+            intent.putExtra("data", mReturnValues);
+            startActivity(intent);
+        }
+    }
+
+    // Metodo para los permisos a uso de la camara y accesar a la galeria
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == PermUtil.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Pix.start(ChatActivity.this, mOptions);
+            } else {
+                Toast.makeText(ChatActivity.this, "Por favor concede los permisos para accesar a la camara!!", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+// =======================================================================================================
+
+
+
 }

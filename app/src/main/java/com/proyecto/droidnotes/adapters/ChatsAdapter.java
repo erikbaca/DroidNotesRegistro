@@ -19,12 +19,16 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
+import com.google.firebase.firestore.QuerySnapshot;
 import com.proyecto.droidnotes.R;
 import com.proyecto.droidnotes.activities.ChatActivity;
 import com.proyecto.droidnotes.models.Chat;
+import com.proyecto.droidnotes.models.Message;
 import com.proyecto.droidnotes.models.User;
 import com.proyecto.droidnotes.providers.AuthProvider;
+import com.proyecto.droidnotes.providers.MessagesProvider;
 import com.proyecto.droidnotes.providers.UsersProvider;
+import com.proyecto.droidnotes.utils.RelativeTime;
 import com.squareup.picasso.Picasso;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -35,8 +39,9 @@ public class ChatsAdapter extends FirestoreRecyclerAdapter<Chat, ChatsAdapter.Vi
     Context context;
     AuthProvider authProvider;
     UsersProvider usersProvider;
+    MessagesProvider messagesProvider;
     User user;
-    ListenerRegistration listener;
+    ListenerRegistration listener, listenerLastMessage;
     // =============================================================================================
 
     //CREAMOS CONSTRUCTOR PARA LA CLASE PRINCIPAL
@@ -47,6 +52,7 @@ public class ChatsAdapter extends FirestoreRecyclerAdapter<Chat, ChatsAdapter.Vi
         // INSTANCIAS ===============================================
         authProvider = new AuthProvider();
         usersProvider = new UsersProvider();
+        messagesProvider = new MessagesProvider();
         user = new User();
         // ==========================================================
     }
@@ -67,14 +73,46 @@ public class ChatsAdapter extends FirestoreRecyclerAdapter<Chat, ChatsAdapter.Vi
             }
         }
 
+        getLastMessage(holder, chat.getId());
         // ACCEDEMOS A CADA UNA DE LAS VISTAS
         getUserInfo(holder, idUser);
-
-
         clickMyView(holder, chat.getId(),idUser);
 
-
     }
+
+
+    // METODO PARA MOSTRAR EL ULTIMO MENSAJE EN CHATS
+    private void getLastMessage(final ViewHolder holder, String idChat) {
+        // OBTENEMOS LA INFORMACION EN TIEMPO REAL
+        listenerLastMessage = messagesProvider.getLastMessage(idChat).addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException error) {
+                if (querySnapshot != null) {
+                    int size = querySnapshot.size();
+                    if (size > 0){
+                        Message message = querySnapshot.getDocuments().get(0).toObject(Message.class);
+                        holder.textViewLastMessage.setText(message.getMessage());
+                        holder.textViewTimestamp.setText(RelativeTime.timeFormatAMPM(message.getTimestamp(), context));
+
+
+                        if (message.getIdSender().equals(authProvider.getId())){
+                            holder.imageViewCheck.setVisibility(View.VISIBLE);
+                            if (message.getStatus().equals("ENVIADO")){
+                                holder.imageViewCheck.setImageResource(R.drawable.icon_double_check_gray);
+                            }
+                            else   if (message.getStatus().equals("VISTO")){
+                                holder.imageViewCheck.setImageResource(R.drawable.icon_double_check_blue);
+                            }
+                        }else {
+                            holder.imageViewCheck.setVisibility(View.GONE);
+                        }
+                    }
+                }
+
+            }
+        });
+    }
+
 
     private void clickMyView(ViewHolder holder, final String idChat , final String idUser) {
         //EVENTO CLICK HACIA EL CHAT DEL CONTACTO
@@ -120,6 +158,10 @@ public class ChatsAdapter extends FirestoreRecyclerAdapter<Chat, ChatsAdapter.Vi
 
     public ListenerRegistration getListener(){
         return listener;
+    }
+
+    public ListenerRegistration getListenerLastMessage(){
+        return listenerLastMessage;
     }
 
 

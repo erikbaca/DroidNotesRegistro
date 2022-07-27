@@ -17,5 +17,6 @@
     <color name="colorBlack">#202020</color>
     <color name="colorOrange">#CF5A0C</color>
     <color name="colorPurple">#62138C</color>
+    <color name="colorFullBlack">#000000</color>
 
 </resources>

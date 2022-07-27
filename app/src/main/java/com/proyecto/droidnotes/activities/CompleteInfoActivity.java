@@ -45,7 +45,6 @@ public class CompleteInfoActivity extends AppCompatActivity {
     ImageProvider mImageProvider;
 
     Options mOptions;
-
     // Arreglo que almacene las url de las imagenes que seleccionemos
     ArrayList<String> mReturnValues = new ArrayList<>();
 
@@ -174,7 +173,7 @@ public class CompleteInfoActivity extends AppCompatActivity {
     }
     // ------------------------------------------------------------------------------------------------
 
-    // Metodo para saber si el usuario selecciono o no la imagen --------------------------------------
+    // MOSTRARA LAS IMAGENES DE LA GALERIA =========================================================
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -198,7 +197,7 @@ public class CompleteInfoActivity extends AppCompatActivity {
                 }
             }
         }
-// --------------------------------------------------------------------------------------------------------------------
+// =======================================================================================================
 
 
 

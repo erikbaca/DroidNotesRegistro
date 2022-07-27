@@ -62,7 +62,8 @@
                     android:id="@+id/imageViewCheck"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
-                    android:src="@drawable/icon_double_check_blue"/>
+                    android:src="@drawable/icon_double_check_blue"
+                    android:visibility="gone"/>
 
                 <TextView
                     android:id="@+id/textViewLastMessage"
