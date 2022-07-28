@@ -8,11 +8,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.media.Image;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,11 +38,15 @@ import com.proyecto.droidnotes.R;
 import com.proyecto.droidnotes.adapters.ChatsAdapter;
 import com.proyecto.droidnotes.adapters.MessagesAdapter;
 import com.proyecto.droidnotes.models.Chat;
+import com.proyecto.droidnotes.models.FCMBody;
+import com.proyecto.droidnotes.models.FCMResponse;
 import com.proyecto.droidnotes.models.Message;
 import com.proyecto.droidnotes.models.User;
 import com.proyecto.droidnotes.providers.AuthProvider;
 import com.proyecto.droidnotes.providers.ChatsProvider;
+import com.proyecto.droidnotes.providers.FilesProvider;
 import com.proyecto.droidnotes.providers.MessagesProvider;
+import com.proyecto.droidnotes.providers.NotificationProvider;
 import com.proyecto.droidnotes.providers.UsersProvider;
 import com.squareup.picasso.Picasso;
 
@@ -48,12 +55,18 @@ import org.w3c.dom.Text;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ChatActivity extends AppCompatActivity {
 
-    // VARIABLES GLOBALES ==========================================================================
+    //////////////////////////////////// VARIABLES GLOBALES /////////////////////////////////////////
     String mExtraIdUser;
     String mExtraIdChat;
 
@@ -61,6 +74,8 @@ public class ChatActivity extends AppCompatActivity {
     AuthProvider mAuthProvider;
     ChatsProvider mChatsProvider;
     MessagesProvider mMessageProvider;
+    FilesProvider mFilesProvider;
+    NotificationProvider mNotificationProvider;
 
     ImageView mImageViewBack;
     TextView mTextViewUsername;
@@ -71,7 +86,10 @@ public class ChatActivity extends AppCompatActivity {
     ImageView mImageViewSend;
     // ==================
 
+    ImageView mImageViewSelectFile;
     ImageView mImageViewSelectPictures;
+
+    User mUser;
 
     MessagesAdapter mAdapter;
     RecyclerView mRecyclerViewMessages;
@@ -80,8 +98,12 @@ public class ChatActivity extends AppCompatActivity {
     Options mOptions;
     // Arreglo que almacene las url de las imagenes que seleccionemos
     ArrayList<String> mReturnValues = new ArrayList<>();
-    // =============================================================================================
+    ArrayList<Uri> mFileList;
+    final int ACTION_FILE = 2;
+    Chat mChat;
+    /////////////////////////////////// CIERRE DE VARIABLES ////////////////////////////////////////
 
+    /////////////////////////////////// INICIO DEL CREATE //////////////////////////////////////////
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,17 +111,22 @@ public class ChatActivity extends AppCompatActivity {
         // INSTANCIAS ==============================================================================
         mExtraIdUser = getIntent().getStringExtra("idUser");
         mExtraIdChat = getIntent().getStringExtra("idChat");
+        mUser = new User();
 
         mUsersProvider = new UsersProvider();
         mAuthProvider = new AuthProvider();
         mChatsProvider = new ChatsProvider();
         mMessageProvider = new MessagesProvider();
+        mFilesProvider = new FilesProvider();
+        mNotificationProvider = new NotificationProvider();
 
         mEditextMessage = findViewById(R.id.editTextMessage);
         mImageViewSend = findViewById(R.id.imageViewSend);
+        mImageViewSelectFile = findViewById(R.id.imageViewSelectFile);
         mRecyclerViewMessages = findViewById(R.id.recyclerViewMessages);
 
         mImageViewSelectPictures = findViewById(R.id.imageViewSelectPictures);
+        // CIERRE INTANCIAS ========================================================================
 
 
         // LA INFORMACION QUE SE MOSTRARA SE REFLEJARA UNA DEBAJO DEL OTRO
@@ -145,7 +172,46 @@ public class ChatActivity extends AppCompatActivity {
             }
         });
 
+        mImageViewSelectFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectFiles();
+            }
+        });
+
     }
+    ///////////////////////////// CIERRE DEL CREATE /////////////////////////////////////////////////
+
+
+    // OBTENEMOS LOS TIPOS DE ARCHIVOS QUE VAN A SER VALIDOS PARA SUBIR EN NUESTRO CHAT
+    private void selectFiles() {
+        String[] mimeTypes =
+                {"application/msword","application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .doc & .docx
+                        "application/vnd.ms-powerpoint","application/vnd.openxmlformats-officedocument.presentationml.presentation", // .ppt & .pptx
+                        "application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xls & .xlsx
+                        "text/plain",
+                        "application/pdf",
+                        "application/zip"};
+
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            intent.setType(mimeTypes.length == 1 ? mimeTypes[0] : "*/*");
+            if (mimeTypes.length > 0) {
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes);
+            }
+        } else {
+            String mimeTypesStr = "";
+            for (String mimeType : mimeTypes) {
+                mimeTypesStr += mimeType + "|";
+            }
+            intent.setType(mimeTypesStr.substring(0,mimeTypesStr.length() - 1));
+        }
+        startActivityForResult(Intent.createChooser(intent,"ChooseFile"), ACTION_FILE);
+    }
+
 
     //  INSTANCIAR EL ADAPTER =================================================
 
@@ -190,6 +256,8 @@ public class ChatActivity extends AppCompatActivity {
             // TEXTO O MENSAJE
             message.setMessage(textMessage);
             message.setStatus("ENVIADO");
+            //ESTABLECEMOS EL TIPO DE MENSAJE
+            message.setType("texto");
             // FECHA
             message.setTimestamp(new Date().getTime());
 
@@ -202,12 +270,22 @@ public class ChatActivity extends AppCompatActivity {
                         mAdapter.notifyDataSetChanged();
 //                        // Toast.makeText(ChatActivity.this, "El mensaje se creo correctamente", Toast.LENGTH_SHORT).show();
                     }
+                    sendNotification(message.getMessage());
                 }
             });
         }
         else {
             Toast.makeText(this, "Ingresa el mensaje", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    // AL PRESIONAR ENVIAR SE ACTIVA LA NOTIFICACION
+    private void sendNotification(String message) {
+        Map<String, String> data = new HashMap<>();
+        data.put("title", "NUEVO MENSAJES");
+        data.put("body", message);
+        data.put("idNotification", String.valueOf(mChat.getIdNotification()));
+        mNotificationProvider.send(ChatActivity.this, mUser.getToken(), data);
     }
 
     // METODO PARA VERIFICAR SI EL CHAT EXISTE
@@ -224,9 +302,23 @@ public class ChatActivity extends AppCompatActivity {
                         mExtraIdChat = queryDocumentSnapshots.getDocuments().get(0).getId();
                         getMessageByChat();
                         updateStatus();
+                        getChatInfo();
 //                        Toast.makeText(ChatActivity.this, "El chat ya existe entre estos dos usuarios", Toast.LENGTH_SHORT).show();
                     }
                 }
+            }
+        });
+    }
+
+    private void getChatInfo() {
+        mChatsProvider.getChatById(mExtraIdChat).addSnapshotListener(new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException error) {
+            if (documentSnapshot != null){
+                if (documentSnapshot.exists()){
+                    mChat = documentSnapshot.toObject(Chat.class);
+                }
+            }
             }
         });
     }
@@ -278,21 +370,26 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+
     private void createChat() {
-        Chat chat = new Chat();
-        chat.setId(mAuthProvider.getId() + mExtraIdUser);
-        chat.setTimestamp(new Date().getTime());
+        Random random = new Random();
+        int n = random.nextInt(100000);
+
+        mChat = new Chat();
+        mChat.setId(mAuthProvider.getId() + mExtraIdUser);
+        mChat.setTimestamp(new Date().getTime());
+        mChat.setIdNotification(n);
 
         ArrayList<String> ids = new ArrayList<>();
         ids.add(mAuthProvider.getId());
         ids.add(mExtraIdUser);
 
-        chat.setIds(ids);
+        mChat.setIds(ids);
 
-        mExtraIdChat = chat.getId();
+        mExtraIdChat = mChat.getId();
 
         // METODO PARA SABER SI LA INFORMACION SE CREO CORRECTAMENTE
-        mChatsProvider.create(chat).addOnSuccessListener(new OnSuccessListener<Void>() {
+        mChatsProvider.create(mChat).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
                 // LLAMAMOS AL METODO OBTENER MENSAJES POR CHAT
@@ -310,13 +407,13 @@ public class ChatActivity extends AppCompatActivity {
                  if (documentSnapshot != null){
                      if(documentSnapshot.exists()){
                          //OBTENIENDO LA INFO DEL USUARIO
-                         User user = documentSnapshot.toObject(User.class);
-                         mTextViewUsername.setText(user.getUsername());
+                         mUser = documentSnapshot.toObject(User.class);
+                         mTextViewUsername.setText(mUser.getUsername());
 
                          //MOSTRAR LA IMAGEN
-                         if (user.getImage() != null){
-                             if (!user.getImage().equals("")){
-                                 Picasso.with(ChatActivity.this).load(user.getImage()).into(mCircleImageUser);
+                         if (mUser.getImage() != null){
+                             if (!mUser.getImage().equals("")){
+                                 Picasso.with(ChatActivity.this).load(mUser.getImage()).into(mCircleImageUser);
                              }
                          }
                      }
@@ -353,7 +450,7 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
-    // NOS RETORNA LAS IMAGENES QUE SELECCIONAMOS Y ADEMAS LOS PERMISOS=========================================
+    // METODO QUE NOS PERMITE CAPTURAR LOS VALORES QUE EL USUARIO SELECCIONO=========================================
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -361,7 +458,31 @@ public class ChatActivity extends AppCompatActivity {
             mReturnValues = data.getStringArrayListExtra(Pix.IMAGE_RESULTS);
             Intent intent = new Intent(ChatActivity.this, ConfirmImageSendActivity.class);
             intent.putExtra("data", mReturnValues);
+            intent.putExtra("idChat", mExtraIdChat);
+            intent.putExtra("idReceiver", mExtraIdUser);
             startActivity(intent);
+        }
+
+        if (requestCode == ACTION_FILE && resultCode == RESULT_OK)
+        {
+            mFileList = new ArrayList<>();
+            ClipData clipData = data.getClipData();
+
+            // SELECCIONO UN SOLO ARCHIVO
+            if (clipData == null){
+                Uri uri = data.getData();
+                mFileList.add(uri);
+            }
+            // SELECCIONO VARIOS ARCHIVOS
+            else   {
+                int count = clipData.getItemCount();
+                for (int i = 0; i < count; i++){
+                    Uri uri = clipData.getItemAt(i).getUri();
+                    mFileList.add(uri);
+                }
+            }
+            mFilesProvider.saveFiles(ChatActivity.this, mFileList, mExtraIdChat, mExtraIdUser);
+
         }
     }
 

@@ -18,12 +18,14 @@ import com.proyecto.droidnotes.fragments.ContactsFragment;
 import com.proyecto.droidnotes.fragments.PhotoFragment;
 import com.proyecto.droidnotes.fragments.StatusFragment;
 import com.proyecto.droidnotes.providers.AuthProvider;
+import com.proyecto.droidnotes.providers.UsersProvider;
 
 // IMPLEMENTAMOS UNA INTERFACE PARA TRABAJAR CON EL SEARCHBAR
 // - IMPLEMENTAMOS LOS 3 METODOS QUE REQUIERE
 public class HomeActivity extends AppCompatActivity implements MaterialSearchBar.OnSearchActionListener{
 
     AuthProvider mAuthProvider;
+    UsersProvider mUsersProvider;
     MaterialSearchBar mSearchBar;
     TabLayout mTabLayout;
     ViewPager mViewPager;
@@ -42,6 +44,7 @@ public class HomeActivity extends AppCompatActivity implements MaterialSearchBar
         setContentView(R.layout.activity_home);
 
         mAuthProvider = new AuthProvider();
+        mUsersProvider = new UsersProvider();
         mSearchBar = findViewById(R.id.searchBar);
         mTabLayout = findViewById(R.id.tabLayout);
         mViewPager = findViewById(R.id.viewPager);
@@ -91,6 +94,14 @@ public class HomeActivity extends AppCompatActivity implements MaterialSearchBar
 
         mAuthProvider = new AuthProvider();
 
+
+        createToken();
+    }
+
+
+    // METODO PARA LA CREACION DEL TOKEN
+    private void createToken() {
+        mUsersProvider.createToken(mAuthProvider.getId());
     }
 
     // METODO HACIA EL PERFIL

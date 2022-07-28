@@ -110,7 +110,11 @@ public class CodeVerificationActivity extends AppCompatActivity {
             mProgressBar.setVisibility(View.GONE);
             mTextViewSMS.setVisibility(View.GONE);
 
-            Toast.makeText(CodeVerificationActivity.this, "Se produjo un error: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(CodeVerificationActivity.this, "Se produjo un error, ingrese un numero de celular Valido: " + e.getMessage(), Toast.LENGTH_LONG).show();
+
+            // SI EL CELULAR ES INCORRECTO REGRESARA AL MAIN ACTIVITY
+            Intent intent = new Intent(CodeVerificationActivity.this, MainActivity.class);
+            startActivity(intent);
         }
 
         //Metodo para obtener la variable verificationId

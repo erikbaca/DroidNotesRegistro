@@ -1,10 +1,13 @@
 package com.proyecto.droidnotes.providers;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
+import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.iid.InstanceIdResult;
 import com.proyecto.droidnotes.models.User;
 
 import java.util.Collection;
@@ -70,6 +73,21 @@ public class UsersProvider {
         Map<String, Object> map = new HashMap<>();
         map.put("info", info);
         return mCollection.document(id).update(map);
+    }
+
+
+    // CREACION DEL TOKEN PARA LAS NOTIFICACIONES ========================================================================
+    public void createToken(final String idUser){
+        FirebaseInstanceId.getInstance().getInstanceId().addOnSuccessListener(new OnSuccessListener<InstanceIdResult>() {
+            @Override
+            public void onSuccess(InstanceIdResult instanceIdResult) {
+                String token = instanceIdResult.getToken();
+                Map<String, Object> map = new HashMap<>();
+                map.put("token", token);
+               mCollection.document(idUser).update(map);
+            }
+        });
+        // ===============================================================================================================
     }
 
 

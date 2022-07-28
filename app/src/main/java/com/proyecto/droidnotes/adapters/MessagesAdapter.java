@@ -1,8 +1,10 @@
 package com.proyecto.droidnotes.adapters;
 
+import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,7 +31,10 @@ import com.proyecto.droidnotes.models.User;
 import com.proyecto.droidnotes.providers.AuthProvider;
 import com.proyecto.droidnotes.providers.UsersProvider;
 import com.proyecto.droidnotes.utils.RelativeTime;
+import com.squareup.picasso.Downloader;
 import com.squareup.picasso.Picasso;
+
+import java.io.File;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -70,8 +75,8 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
         // SI NOSOTROS ENVIAMOS EL MENSAJE
         if (message.getIdSender().equals(authProvider.getId())){
             RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(
-              RelativeLayout.LayoutParams.WRAP_CONTENT,
-              RelativeLayout.LayoutParams.WRAP_CONTENT
+                    RelativeLayout.LayoutParams.WRAP_CONTENT,
+                    RelativeLayout.LayoutParams.WRAP_CONTENT
             );
             // NUESTRO MENSAJE SE POSICIONARA A LA DERECHA
             params.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
@@ -110,9 +115,52 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
             holder.imageViewCheck.setVisibility(View.GONE);
         }
 
+        showDocument(holder, message);
+        openMessage(holder, message);
 
     }
 
+    // METODO PARA LA DESCARGA DE UN ARCHIVO
+    private void openMessage(ViewHolder holder, Message message) {
+        holder.myView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(message.getType().equals("documento")){
+                    File file = new File(context.getExternalFilesDir(null), "file");
+                    DownloadManager.Request request = new DownloadManager.Request(Uri.parse(message.getUrl()))
+                                                     .setTitle(message.getMessage())
+                                                     .setDescription("Download")
+                                                     .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                                                     .setDestinationUri(Uri.fromFile(file))
+                                                     .setAllowedOverMetered(true)
+                                                     .setAllowedOverRoaming(true);
+
+                    DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+                    downloadManager.enqueue(request);
+                }
+            }
+        });
+    }
+
+
+    // MOSTRAR LA DESCARGA DEL DOCUMENTO
+    private void showDocument(ViewHolder holder, Message message) {
+        if (message.getType().equals("documento")){
+            if (message.getUrl() != null){
+                if (!message.getUrl().equals("")){
+                    holder.linearLayoutDocument.setVisibility(View.VISIBLE);
+                }
+                else {
+                    holder.linearLayoutDocument.setVisibility(View.GONE);
+                }
+            }
+            else {
+                holder.linearLayoutDocument.setVisibility(View.GONE);
+            }
+        }else {
+            holder.linearLayoutDocument.setVisibility(View.GONE);
+        }
+    }
 
 
     public ListenerRegistration getListener(){
@@ -135,6 +183,7 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
         TextView textViewMessage, textViewDate;
         ImageView imageViewCheck;
         LinearLayout linearLayoutMessage;
+        LinearLayout linearLayoutDocument;
 
         View myView;
         // CIERRE DE VARIABLES ====================================================================
@@ -149,6 +198,7 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
             textViewDate = view.findViewById(R.id.textViewDate);
             imageViewCheck = view.findViewById(R.id.imageViewCheck);
             linearLayoutMessage = view.findViewById(R.id.linearLayoutMessage);
+            linearLayoutDocument = view.findViewById(R.id.linearLayoutDocument);
 
         }
     }

@@ -2,6 +2,7 @@ package com.proyecto.droidnotes.providers;
 
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.proyecto.droidnotes.models.Chat;
@@ -38,6 +39,11 @@ public class ChatsProvider {
         ids.add(idUser2 + idUser1);
         return mCollection.whereIn("id", ids);
 
+    }
+
+    // CLASE DE ESTADO DEL USUARIO
+    public DocumentReference getChatById(String idChat){
+        return mCollection.document(idChat);
     }
 
     //   ==================   CIERRE CHATS ==============================
