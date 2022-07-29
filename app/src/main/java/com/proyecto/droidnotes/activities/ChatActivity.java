@@ -34,6 +34,7 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.gson.Gson;
 import com.proyecto.droidnotes.R;
 import com.proyecto.droidnotes.adapters.ChatsAdapter;
 import com.proyecto.droidnotes.adapters.MessagesAdapter;
@@ -54,6 +55,7 @@ import org.w3c.dom.Text;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -89,7 +91,10 @@ public class ChatActivity extends AppCompatActivity {
     ImageView mImageViewSelectFile;
     ImageView mImageViewSelectPictures;
 
-    User mUser;
+    // NOTIFICACIONES
+    User mUserReceiver;
+    User mMyUser;
+    // ==============
 
     MessagesAdapter mAdapter;
     RecyclerView mRecyclerViewMessages;
@@ -111,7 +116,7 @@ public class ChatActivity extends AppCompatActivity {
         // INSTANCIAS ==============================================================================
         mExtraIdUser = getIntent().getStringExtra("idUser");
         mExtraIdChat = getIntent().getStringExtra("idChat");
-        mUser = new User();
+        //mUser = new User();
 
         mUsersProvider = new UsersProvider();
         mAuthProvider = new AuthProvider();
@@ -149,10 +154,10 @@ public class ChatActivity extends AppCompatActivity {
 
         // =========================================================================================
         showChatToolbar(R.layout.chat_toolbar);
-        getUserInfor();
+        getUserReceiverInfo();
+        getMyUserInfo();
+        checkIfExistChat();
 
-
-            checkIfExistChat();
 
 
         // EVENTO CLICK AL BOTON ENVIAR DEL CHAT
@@ -241,6 +246,8 @@ public class ChatActivity extends AppCompatActivity {
 
     // ========================================================================
 
+
+
     //  CREACION DEL MENSAJE
     private void createMessage() {
         String textMessage = mEditextMessage.getText().toString();
@@ -270,7 +277,7 @@ public class ChatActivity extends AppCompatActivity {
                         mAdapter.notifyDataSetChanged();
 //                        // Toast.makeText(ChatActivity.this, "El mensaje se creo correctamente", Toast.LENGTH_SHORT).show();
                     }
-                    sendNotification(message.getMessage());
+                    getLastMessages(message);
                 }
             });
         }
@@ -279,13 +286,48 @@ public class ChatActivity extends AppCompatActivity {
         }
     }
 
-    // AL PRESIONAR ENVIAR SE ACTIVA LA NOTIFICACION
-    private void sendNotification(String message) {
+
+    // OBTENER LOS MENSAJES APILADOS NO LEIDOS
+    private void getLastMessages(final Message message){
+        mMessageProvider.getLastMessageByChatAndSender(mExtraIdChat, mAuthProvider.getId()).get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
+            @Override
+            public void onSuccess(QuerySnapshot querySnapshot) {
+                if (querySnapshot != null){
+                    ArrayList<Message> messages = new ArrayList<>();
+
+                    for (DocumentSnapshot document: querySnapshot.getDocuments()){
+                        Message m = document.toObject(Message.class);
+                        messages.add(m);
+                    }
+                    if (messages.size() == 0){
+                        messages.add(message);
+                    }
+
+                    // VOLTEAR LA LISTA DE MENSAJES EN LAS NOTIFICACIONES
+                    Collections.reverse(messages);
+                    sendNotification(messages);
+
+                }
+            }
+        });
+    }
+
+
+    // METODO PARA ENVIAR LA NOTIFICACION
+    private void sendNotification(ArrayList<Message> messages) {
         Map<String, String> data = new HashMap<>();
-        data.put("title", "NUEVO MENSAJES");
-        data.put("body", message);
+        data.put("title", "MENSAJE");
+        data.put("body", "texto mensaje");
         data.put("idNotification", String.valueOf(mChat.getIdNotification()));
-        mNotificationProvider.send(ChatActivity.this, mUser.getToken(), data);
+        data.put("usernameReceiver", mUserReceiver.getUsername());
+        data.put("usernameSender", mMyUser.getUsername());
+
+        // CONVERTIR A UN OBJETO JSON
+        Gson gson = new Gson();
+        String messagesJSON = gson.toJson(messages);
+
+        data.put("messagesJSON", messagesJSON);
+        mNotificationProvider.send(ChatActivity.this, mUserReceiver.getToken(), data);
     }
 
     // METODO PARA VERIFICAR SI EL CHAT EXISTE
@@ -399,21 +441,34 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    private void getMyUserInfo(){
+        mUsersProvider.getUserInfo(mAuthProvider.getId()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+            @Override
+            public void onSuccess(DocumentSnapshot documentSnapshot) {
+              if (documentSnapshot.exists()){
+                  mMyUser = documentSnapshot.toObject(User.class);
+              }
+            }
+        });
+    }
+
+
+
     // VALIDACION EN TIEMPO REAL
-    private void getUserInfor() {
+    private void getUserReceiverInfo() {
         mUsersProvider.getUserInfo(mExtraIdUser).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException error) {
                  if (documentSnapshot != null){
                      if(documentSnapshot.exists()){
                          //OBTENIENDO LA INFO DEL USUARIO
-                         mUser = documentSnapshot.toObject(User.class);
-                         mTextViewUsername.setText(mUser.getUsername());
+                         mUserReceiver = documentSnapshot.toObject(User.class);
+                         mTextViewUsername.setText(mUserReceiver.getUsername());
 
                          //MOSTRAR LA IMAGEN
-                         if (mUser.getImage() != null){
-                             if (!mUser.getImage().equals("")){
-                                 Picasso.with(ChatActivity.this).load(mUser.getImage()).into(mCircleImageUser);
+                         if (mUserReceiver.getImage() != null){
+                             if (!mUserReceiver.getImage().equals("")){
+                                 Picasso.with(ChatActivity.this).load(mUserReceiver.getImage()).into(mCircleImageUser);
                              }
                          }
                      }

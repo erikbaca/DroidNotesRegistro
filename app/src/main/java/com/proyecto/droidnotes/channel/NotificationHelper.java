@@ -5,13 +5,21 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Build;
 
 import androidx.annotation.RequiresApi;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.Person;
+import androidx.core.graphics.drawable.IconCompat;
 
 import com.proyecto.droidnotes.R;
+import com.proyecto.droidnotes.models.Message;
+
+import java.util.Date;
+
+import kotlin.text.UStringsKt;
 
 
 //////////////////////////   CONFIGURACIONES PARA CREAR EL CANAL DE NOTIFICACIONES ///////////////////////////////////////
@@ -57,12 +65,49 @@ public class NotificationHelper extends ContextWrapper {
     // CONFIGURACION DE NUESTRA NOTIFICACION
     public NotificationCompat.Builder getNotification(String title, String body){
         return new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                                     .setContentTitle(title)
-                                     .setContentText(body)
-                                     .setAutoCancel(true)
-                                     .setColor(Color.GRAY)
-                                     .setSmallIcon(R.mipmap.ic_launcher)
-                                     .setStyle(new NotificationCompat.BigTextStyle().bigText(body).setBigContentTitle(title));
+                .setContentTitle(title)
+                .setContentText(body)
+                .setAutoCancel(true)
+                .setColor(Color.GRAY)
+                .setSmallIcon(R.mipmap.ic_logoapp)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(body).setBigContentTitle(title));
+    }
+
+
+
+    public NotificationCompat.Builder getNotificationMessage(
+            Message[] messages,
+            String usernameReceiver,
+            String usernameSender){
+
+        Person myPerson = new Person.Builder()
+                .setName(usernameReceiver)
+                .setIcon(IconCompat.createWithResource(getApplicationContext(), R.drawable.ic_person))
+                .build();
+
+
+
+        // USUARIO QUE RECIBIRIA EL MENSAJE
+        Person receiverPerson = new Person.Builder()
+                .setName(usernameSender)
+                .setIcon(IconCompat.createWithResource(getApplicationContext(), R.drawable.ic_person))
+                .build();
+
+        NotificationCompat.MessagingStyle messagingStyle = new NotificationCompat.MessagingStyle(receiverPerson);
+
+        for (Message m: messages){
+            // AÑADIR NUEVOS MENSAJES A LA NOTIFICACION
+            NotificationCompat.MessagingStyle.Message messageNotification = new NotificationCompat.MessagingStyle.Message(
+                    m.getMessage(),
+                    m.getTimestamp(),
+                    receiverPerson
+            );
+            // AÑADIMOS EL MENSAJE QUE ACABAMOS DE CREAR
+            messagingStyle.addMessage(messageNotification);
+        }
+        return new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
+                .setSmallIcon(R.mipmap.ic_logoapp)
+                .setStyle(messagingStyle);
     }
 
 }
