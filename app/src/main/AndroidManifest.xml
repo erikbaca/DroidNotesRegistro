@@ -61,6 +61,11 @@
             android:name="com.google.firebase.messaging.default_notification_channel_id"
             android:value="@string/default_notification_channel_id" />
 
+<!--        REGISTRO DEL RECEIVER-->
+        <receiver android:name=".receivers.ResponseReceiver"
+                 android:enabled="true"
+                 android:exported="false"/>
+
     </application>
 
 </manifest>

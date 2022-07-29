@@ -77,24 +77,54 @@ public class NotificationHelper extends ContextWrapper {
 
     public NotificationCompat.Builder getNotificationMessage(
             Message[] messages,
-            String usernameReceiver,
-            String usernameSender){
+            String myMessage,
+            String usernameSender,
+            Bitmap bitmapReceiver,
+            Bitmap myBitmap,
+            NotificationCompat.Action actionResponse
+    ){
 
-        Person myPerson = new Person.Builder()
-                .setName(usernameReceiver)
-                .setIcon(IconCompat.createWithResource(getApplicationContext(), R.drawable.ic_person))
-                .build();
+        // YO RESPONDO EL MENSAJE
+        Person myPerson = null;
+        Person receiverPerson = null;
+
+        if (bitmapReceiver == null){
+            // USUARIO QUE RECIBIRIA EL MENSAJE
+            receiverPerson =  new Person.Builder()
+                    .setName(usernameSender)
+                    .setIcon(IconCompat.createWithResource(getApplicationContext(), R.drawable.ic_person))
+                    .build();
+        }
+        else{
+            receiverPerson =  new Person.Builder()
+                    .setName(usernameSender)
+                    .setIcon(IconCompat.createWithBitmap(bitmapReceiver))
+                    .build();
+
+        }
 
 
 
-        // USUARIO QUE RECIBIRIA EL MENSAJE
-        Person receiverPerson = new Person.Builder()
-                .setName(usernameSender)
-                .setIcon(IconCompat.createWithResource(getApplicationContext(), R.drawable.ic_person))
-                .build();
+        if (myBitmap == null){
+            // USUARIO QUE RECIBIRIA EL MENSAJE
+            myPerson =  new Person.Builder()
+                    .setName("Tu")
+                    .setIcon(IconCompat.createWithResource(getApplicationContext(), R.drawable.ic_person))
+                    .build();
+        }
+        else{
+            myPerson =  new Person.Builder()
+                    .setName("Tu")
+                    .setIcon(IconCompat.createWithBitmap(myBitmap))
+                    .build();
+
+        }
+
 
         NotificationCompat.MessagingStyle messagingStyle = new NotificationCompat.MessagingStyle(receiverPerson);
 
+
+        //  QUE SE MUESTREN LOS MENSAJES DEL USUARIO Y MI RESPUESTA
         for (Message m: messages){
             // AÑADIR NUEVOS MENSAJES A LA NOTIFICACION
             NotificationCompat.MessagingStyle.Message messageNotification = new NotificationCompat.MessagingStyle.Message(
@@ -105,9 +135,21 @@ public class NotificationHelper extends ContextWrapper {
             // AÑADIMOS EL MENSAJE QUE ACABAMOS DE CREAR
             messagingStyle.addMessage(messageNotification);
         }
+
+        if (!myMessage.equals("")){
+            NotificationCompat.MessagingStyle.Message myMessageNotification = new NotificationCompat.MessagingStyle.Message(
+                    myMessage,
+                    new Date().getTime(),
+                    myPerson
+            );
+            // AÑADIMOS EL MENSAJE QUE ACABAMOS DE CREAR
+            messagingStyle.addMessage(myMessageNotification);
+
+        }
         return new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
                 .setSmallIcon(R.mipmap.ic_logoapp)
-                .setStyle(messagingStyle);
+                .setStyle(messagingStyle)
+                .addAction(actionResponse);
     }
 
 }

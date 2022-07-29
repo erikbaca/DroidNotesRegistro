@@ -321,6 +321,8 @@ public class ChatActivity extends AppCompatActivity {
         data.put("idNotification", String.valueOf(mChat.getIdNotification()));
         data.put("usernameReceiver", mUserReceiver.getUsername());
         data.put("usernameSender", mMyUser.getUsername());
+        data.put("imageReceiver", mUserReceiver.getImage());
+        data.put("imageSender", mMyUser.getImage());
 
         // CONVERTIR A UN OBJETO JSON
         Gson gson = new Gson();
