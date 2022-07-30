@@ -8,6 +8,7 @@ import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -113,8 +114,13 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
             holder.textViewMessage.setTextColor(Color.BLACK);
             holder.textViewDate.setTextColor(Color.BLACK);
             holder.imageViewCheck.setVisibility(View.GONE);
+            ViewGroup.MarginLayoutParams marginDate = (ViewGroup.MarginLayoutParams) holder.textViewDate.getLayoutParams();
+            marginDate.rightMargin = 10;
         }
 
+
+        showImage(holder, message);
+        showVideo(holder, message);
         showDocument(holder, message);
         openMessage(holder, message);
 
@@ -163,6 +169,83 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
     }
 
 
+    // CREACION DE METODO PARA MOSTRAR EL VIDEO
+    private void showVideo(ViewHolder holder, Message message){
+        if (message.getType().equals("video")){
+            if (message.getUrl() != null){
+                if (!message.getUrl().equals("")){
+                    holder.frameLayoutVideo.setVisibility(View.VISIBLE);
+                    Picasso.with(context).load(message.getUrl()).into(holder.imageViewMessage);
+
+                    if (message.getMessage().equals("\uD83C\uDFA5video")){
+                        holder.textViewMessage.setVisibility(View.GONE);
+
+                        ViewGroup.MarginLayoutParams marginDate = (ViewGroup.MarginLayoutParams) holder.textViewDate.getLayoutParams();
+                        ViewGroup.MarginLayoutParams marginCheck = (ViewGroup.MarginLayoutParams) holder.imageViewCheck.getLayoutParams();
+                        marginDate.topMargin = 15;
+                        marginCheck.topMargin = 15;
+                    }
+                    else {
+                        holder.textViewMessage.setVisibility(View.VISIBLE);
+                    }
+                }
+                else {
+                    holder.frameLayoutVideo.setVisibility(View.GONE);
+                    holder.textViewMessage.setVisibility(View.VISIBLE);
+                }
+            }else {
+                holder.frameLayoutVideo.setVisibility(View.GONE);
+                holder.textViewMessage.setVisibility(View.VISIBLE);
+            }
+        }
+        else {
+            holder.frameLayoutVideo.setVisibility(View.GONE);
+            holder.textViewMessage.setVisibility(View.VISIBLE);
+        }
+
+    }
+
+
+
+    // CREACION DE METODO PARA MOSTRAR EL MENSAJE
+    private void showImage(ViewHolder holder, Message message){
+
+        if (message.getType().equals("imagen")){
+            if (message.getUrl() != null){
+                if (!message.getUrl().equals("")){
+                    holder.imageViewMessage.setVisibility(View.VISIBLE);
+                    Picasso.with(context).load(message.getUrl()).into(holder.imageViewMessage);
+
+                    if (message.getMessage().equals("\uD83D\uDCF7imagen")){
+                        holder.textViewMessage.setVisibility(View.GONE);
+
+                        ViewGroup.MarginLayoutParams marginDate = (ViewGroup.MarginLayoutParams) holder.textViewDate.getLayoutParams();
+                        ViewGroup.MarginLayoutParams marginCheck = (ViewGroup.MarginLayoutParams) holder.imageViewCheck.getLayoutParams();
+                        marginDate.topMargin = 15;
+                        marginCheck.topMargin = 15;
+                    }
+                    else {
+                        holder.textViewMessage.setVisibility(View.VISIBLE);
+                    }
+                }
+                else {
+                    holder.imageViewMessage.setVisibility(View.GONE);
+                    holder.textViewMessage.setVisibility(View.VISIBLE);
+                }
+            }else {
+                holder.imageViewMessage.setVisibility(View.GONE);
+                holder.textViewMessage.setVisibility(View.VISIBLE);
+            }
+        }
+        else {
+            holder.imageViewMessage.setVisibility(View.GONE);
+            holder.textViewMessage.setVisibility(View.VISIBLE);
+        }
+
+    }
+
+
+
     public ListenerRegistration getListener(){
         return listener;
     }
@@ -185,6 +268,13 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
         LinearLayout linearLayoutMessage;
         LinearLayout linearLayoutDocument;
 
+        ImageView imageViewMessage;
+
+        FrameLayout frameLayoutVideo;
+        View viewVideo;
+        ImageView imageViewVideo;
+
+
         View myView;
         // CIERRE DE VARIABLES ====================================================================
 
@@ -197,8 +287,14 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
             textViewMessage = view.findViewById(R.id.textViewMessage);
             textViewDate = view.findViewById(R.id.textViewDate);
             imageViewCheck = view.findViewById(R.id.imageViewCheck);
+            imageViewMessage = view.findViewById(R.id.imageViewMessage);
             linearLayoutMessage = view.findViewById(R.id.linearLayoutMessage);
             linearLayoutDocument = view.findViewById(R.id.linearLayoutDocument);
+            frameLayoutVideo = view.findViewById(R.id.frameLayoutVideo);
+            viewVideo = view.findViewById(R.id.viewVideo);
+            imageViewVideo = view.findViewById(R.id.imageViewVideo);
+
+
 
         }
     }

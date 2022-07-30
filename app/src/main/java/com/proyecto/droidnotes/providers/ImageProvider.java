@@ -2,6 +2,7 @@ package com.proyecto.droidnotes.providers;
 
 import android.content.Context;
 import android.net.Uri;
+import android.provider.VoicemailContract;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -14,10 +15,16 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.proyecto.droidnotes.models.Message;
 import com.proyecto.droidnotes.utils.CompressorBitmapImage;
+import com.proyecto.droidnotes.utils.ExtensionFile;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.UUID;
+
+import javax.net.ssl.SSLEngineResult;
+
+import io.grpc.Status;
 
 public class ImageProvider {
 
@@ -34,6 +41,7 @@ public class ImageProvider {
         mFirebaseStorage = FirebaseStorage.getInstance();
         mStorage = mFirebaseStorage.getReference();
         mMessageProvider = new MessagesProvider();
+        index = 0;
        // =================================================================
     }
 
@@ -49,14 +57,30 @@ public class ImageProvider {
     //METODO PARA ALMACENAR MULTIPLES ARCHIVOS
     public void uploadMultiple(final Context context, ArrayList<Message> messages){
         Uri[] uri = new Uri[messages.size()];
-        for (int i = 0; i < messages.size(); i++){
-            File file = CompressorBitmapImage.reduceImageSize(new File(messages.get(i).getUrl()));
+        File file = null;
+//        for (int i = 0; i < messages.size(); i++){
 
-            uri[i] = Uri.parse("file://" + file.getPath());
+        // CREAMOS EL ARCHIVOS DEPENDIENDO SI ES IMAGEN O VIDEO
+        if (ExtensionFile.isImageFile(messages.get(index).getUrl())){
+            file = CompressorBitmapImage.reduceImageSize(new File(messages.get(index).getUrl()));
+        }
+        else {
+            file = new File(messages.get(index).getUrl());
+        }
 
-            final StorageReference ref = mStorage.child(uri[i].getLastPathSegment());
+        uri[index] = Uri.parse("file://" + file.getPath());
+        String name = UUID.randomUUID().toString();
+
+        if (ExtensionFile.isImageFile(messages.get(index).getUrl())){
+            name = name + ".jpg";
+        }
+        else {
+            name = name + ".mp4";
+        }
+
+            final StorageReference ref = mStorage.child(name);
             // VERIFICAMOS SI YA SE TERMINO DE GUARDAR LA IMAGEN EN FIREBASE
-            ref.putFile(uri[i]).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            ref.putFile(uri[index]).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
                 @Override
                 public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
@@ -69,6 +93,10 @@ public class ImageProvider {
                                 messages.get(index).setUrl(url);
                                 mMessageProvider.create(messages.get(index));
                                 index++;
+
+                                if (index < messages.size()){
+                                    uploadMultiple(context, messages);
+                                }
                             }
                         });
 
@@ -77,10 +105,9 @@ public class ImageProvider {
                     }
                 }
             });
-        }
+//        }
 
     }
-
 
 
     // Metodo que nos retornara la URL de la imagen que guardaremos

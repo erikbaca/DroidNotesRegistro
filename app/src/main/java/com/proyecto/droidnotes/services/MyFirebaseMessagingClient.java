@@ -118,9 +118,15 @@ public class MyFirebaseMessagingClient extends FirebaseMessagingService {
         String usernameSender = data.get("usernameSender");
         String usernameReceiver = data.get("usernameReceiver");
         String messagesJSON = data.get("messagesJSON");
-        final String imageSender = data.get("imageSender");
-        final String imageReceiver = data.get("imageReceiver");
+        String imageSender = data.get("imageSender");
+        String imageReceiver = data.get("imageReceiver");
+        String tokenSender = data.get("tokenSender");
+        String tokenReceiver = data.get("tokenReceiver");
         int id = Integer.parseInt(idNotification);
+
+        String idChat = data.get("idChat");
+        String idSender = data.get("idSender");
+        String idReceiver = data.get("idReceiver");
 
         // CONVERTIR EL OBJETO GSON A UN OBJETO DE MENSAJES
         Gson gson = new Gson();
@@ -135,8 +141,16 @@ public class MyFirebaseMessagingClient extends FirebaseMessagingService {
         intentResponse.putExtra("idNotification", id);
         intentResponse.putExtra("messages", messagesJSON);
         intentResponse.putExtra("usernameSender", usernameSender);
+        intentResponse.putExtra("usernameReceiver", usernameReceiver);
         intentResponse.putExtra("imageSender", imageSender);
         intentResponse.putExtra("imageReceiver", imageReceiver);
+
+        intentResponse.putExtra("idChat", idChat);
+        intentResponse.putExtra("idSender", idSender);
+        intentResponse.putExtra("idReceiver", idReceiver);
+        intentResponse.putExtra("tokenSender", tokenSender);
+        intentResponse.putExtra("tokenReceiver", tokenReceiver);
+
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, id, intentResponse, PendingIntent.FLAG_UPDATE_CURRENT);
         RemoteInput remoteInput = new RemoteInput.Builder(NOTIFICATION_REPLY).setLabel("Tu mensaje...").build();

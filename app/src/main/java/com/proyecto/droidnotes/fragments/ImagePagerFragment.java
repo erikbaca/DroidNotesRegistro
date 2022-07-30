@@ -1,6 +1,7 @@
 package com.proyecto.droidnotes.fragments;
 
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.cardview.widget.CardView;
@@ -12,12 +13,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.VideoView;
 
 import com.proyecto.droidnotes.R;
 import com.proyecto.droidnotes.activities.ConfirmImageSendActivity;
 import com.proyecto.droidnotes.adapters.CardAdapter;
+import com.proyecto.droidnotes.utils.ExtensionFile;
 
 import java.io.File;
 
@@ -30,6 +34,11 @@ public class ImagePagerFragment extends Fragment {
     ImageView mImageViewBack;
     ImageView mImageViewSend;
     LinearLayout mLinearLayoutImagePager;
+    VideoView mVideo;
+    View mViewVideo;
+    ImageView mImageViewVideo;
+
+    FrameLayout mFrameLayoutVideo;
 
     EditText mEditTextComment;
 
@@ -59,6 +68,11 @@ public class ImagePagerFragment extends Fragment {
         mLinearLayoutImagePager = mView.findViewById(R.id.linearLayoutViewPager);
         mEditTextComment = mView.findViewById(R.id.editTextComment);
         mImageViewSend = mView.findViewById(R.id.imageViewSend);
+        mFrameLayoutVideo = mView.findViewById(R.id.frameLayoutVideo);
+        mVideo = mView.findViewById(R.id.videoView);
+        mImageViewVideo = mView.findViewById(R.id.imageViewVideo);
+        mViewVideo = mView.findViewById(R.id.viewVideo);
+
 
 
 
@@ -66,6 +80,24 @@ public class ImagePagerFragment extends Fragment {
         String imagePath = getArguments().getString("image");
         int size = getArguments().getInt("size");
         int position = getArguments().getInt("position");
+
+        if (ExtensionFile.isImageFile(imagePath)){
+            mFrameLayoutVideo.setVisibility(View.GONE);
+            mImageViewPicture.setVisibility(View.VISIBLE);
+
+            if (imagePath != null){
+                File file = new File(imagePath);
+                // TRANFORMAR LA RUTA PARA MOSTRAR LA IMAGEN EN EL FRAGMENT
+                mImageViewPicture.setImageBitmap(BitmapFactory.decodeFile(file.getAbsolutePath()));
+            }
+        }
+        else if (ExtensionFile.isVideoFile(imagePath)){
+            mFrameLayoutVideo.setVisibility(View.VISIBLE);
+            mImageViewPicture.setVisibility(View.GONE);
+
+            Uri uri = Uri.parse(imagePath);
+            mVideo.setVideoURI(uri);
+        }
 
 
         if (size == 1){
@@ -75,11 +107,7 @@ public class ImagePagerFragment extends Fragment {
             params.topMargin = 35;
         }
 
-        if (imagePath != null){
-            File file = new File(imagePath);
-            // TRANFORMAR LA RUTA PARA MOSTRAR LA IMAGEN EN EL FRAGMENT
-            mImageViewPicture.setImageBitmap(BitmapFactory.decodeFile(file.getAbsolutePath()));
-        }
+
 
         mImageViewBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,7 +141,31 @@ public class ImagePagerFragment extends Fragment {
             }
         });
 
+        mFrameLayoutVideo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!mVideo.isPlaying()){
+                    mViewVideo.setVisibility(View.GONE);
+                    mImageViewVideo.setVisibility(View.GONE);
+                    mVideo.start();
+                }
+                else{
+                    mViewVideo.setVisibility(View.VISIBLE);
+                    mImageViewVideo.setVisibility(View.VISIBLE);
+                    mVideo.pause();
+                }
+            }
+        });
+
         return mView;
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mVideo.isPlaying()){
+            mVideo.pause();
+        }
     }
 
     public CardView getCardView(){

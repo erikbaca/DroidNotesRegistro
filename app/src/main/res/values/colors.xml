@@ -18,5 +18,6 @@
     <color name="colorOrange">#CF5A0C</color>
     <color name="colorPurple">#62138C</color>
     <color name="colorFullBlack">#000000</color>
+    <color name="colorBrownAccent">#A1786B</color>
 
 </resources>

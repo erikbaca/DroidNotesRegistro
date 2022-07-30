@@ -144,7 +144,7 @@ public class ChatActivity extends AppCompatActivity {
                 .setCount(5)                                                   //Number of images to restict selection count
                 .setFrontfacing(false)                                         //Front Facing camera on start
                 .setPreSelectedUrls(mReturnValues)                            //Pre selected Image Urls
-                .setExcludeVideos(true)
+                .setExcludeVideos(false)
                 .setSpanCount(4)                                               //Span count for gallery min 1 & max 5
                 .setMode(Options.Mode.All)                                     //Option to select only pictures or videos or both
                 .setVideoDurationLimitinSeconds(0)                            //Duration for video recording
@@ -323,6 +323,12 @@ public class ChatActivity extends AppCompatActivity {
         data.put("usernameSender", mMyUser.getUsername());
         data.put("imageReceiver", mUserReceiver.getImage());
         data.put("imageSender", mMyUser.getImage());
+        data.put("idChat", mExtraIdChat);
+        data.put("idSender", mAuthProvider.getId());
+        data.put("idReceiver", mUserReceiver.getId());
+        data.put("tokenSender", mMyUser.getToken());
+        data.put("tokenReceiver", mUserReceiver.getToken());
+
 
         // CONVERTIR A UN OBJETO JSON
         Gson gson = new Gson();
@@ -517,6 +523,14 @@ public class ChatActivity extends AppCompatActivity {
             intent.putExtra("data", mReturnValues);
             intent.putExtra("idChat", mExtraIdChat);
             intent.putExtra("idReceiver", mExtraIdUser);
+
+            Gson gson = new Gson();
+            String myUserJSON = gson.toJson(mMyUser);
+            String receiverUserJSON = gson.toJson(mUserReceiver);
+
+            intent.putExtra("myUser", myUserJSON);
+            intent.putExtra("receiverUser", receiverUserJSON);
+            intent.putExtra("idNotification", String.valueOf(mChat.getIdNotification()));
             startActivity(intent);
         }
 
@@ -539,6 +553,26 @@ public class ChatActivity extends AppCompatActivity {
                 }
             }
             mFilesProvider.saveFiles(ChatActivity.this, mFileList, mExtraIdChat, mExtraIdUser);
+
+
+            // CREAMOS MODELO DE TIPO MESSAGE
+            Message message = new Message();
+            // CHAT AL CUAL PERTENECEN LO MENSAJES QUE CREAREMOS
+            message.setIdChat(mExtraIdChat);
+            // NUESTRO USUARIO YA QUE ESTAMOS ESCRIBIENDO EL MENSAJE Y ENVIANDOLO
+            message.setIdSender(mAuthProvider.getId());
+            // USUARIO DE RECIBE EL MENSAJE
+            message.setIdReceiver(mExtraIdUser);
+            // TEXTO O MENSAJE
+            message.setMessage("\uD83D\uDCC4 Documento");
+            message.setStatus("ENVIADO");
+            //ESTABLECEMOS EL TIPO DE MENSAJE
+            message.setType("texto");
+            // FECHA
+            message.setTimestamp(new Date().getTime());
+            ArrayList<Message> messages = new ArrayList<>();
+            messages.add(message);
+            sendNotification(messages);
 
         }
     }
