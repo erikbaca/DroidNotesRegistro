@@ -8,20 +8,21 @@ public class User {
     private String image;
     private String info;
     private String token;
+    private boolean isSelected;
 
     public User() {
 
     }
 
-    public User(String id, String username, String phone, String image, String info, String token) {
+    public User(String id, String username, String phone, String image, String info, String token, boolean isSelected) {
         this.id = id;
         this.username = username;
         this.phone = phone;
         this.image = image;
         this.info = info;
         this.token = token;
+        this.isSelected = isSelected;
     }
-
 
     public String getId() {
         return id;
@@ -69,5 +70,13 @@ public class User {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public boolean isSelected() {
+        return isSelected;
+    }
+
+    public void setSelected(boolean selected) {
+        isSelected = selected;
     }
 }

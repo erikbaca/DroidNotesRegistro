@@ -5,6 +5,7 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.viewpager.widget.ViewPager;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
@@ -42,6 +43,8 @@ public class HomeActivity extends AppCompatActivity implements MaterialSearchBar
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+        setStatusBarColor();
+
 
         mAuthProvider = new AuthProvider();
         mUsersProvider = new UsersProvider();
@@ -88,6 +91,9 @@ public class HomeActivity extends AppCompatActivity implements MaterialSearchBar
                 else if (item.getItemId() == R.id.itemProfile) {
                     goToProfile();
                 }
+                else if (item.getItemId() == R.id.itemAdd) {
+                    goToAddMultiUsers();
+                }
                 return true;
             }
         });
@@ -96,6 +102,14 @@ public class HomeActivity extends AppCompatActivity implements MaterialSearchBar
 
 
         createToken();
+    }
+
+
+
+    private void goToAddMultiUsers() {
+
+        Intent intent = new Intent(HomeActivity.this, AddMultiUserActivity.class);
+        startActivity(intent);
     }
 
 
@@ -150,4 +164,14 @@ public class HomeActivity extends AppCompatActivity implements MaterialSearchBar
     }
 
     // CIERRE -----------------------------------------------------------------
+
+    private void setStatusBarColor(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            getWindow().setStatusBarColor(getResources().getColor(R.color.colorFullBlack, this.getTheme()));
+        }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            getWindow().setStatusBarColor(getResources().getColor(R.color.colorFullBlack));
+        }
+    }
+
+
 }

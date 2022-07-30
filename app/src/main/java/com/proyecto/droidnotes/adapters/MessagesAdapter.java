@@ -26,6 +26,7 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.proyecto.droidnotes.R;
 import com.proyecto.droidnotes.activities.ChatActivity;
+import com.proyecto.droidnotes.activities.ShowImageOrVideoActivity;
 import com.proyecto.droidnotes.models.Chat;
 import com.proyecto.droidnotes.models.Message;
 import com.proyecto.droidnotes.models.User;
@@ -123,7 +124,6 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
         showVideo(holder, message);
         showDocument(holder, message);
         openMessage(holder, message);
-
     }
 
     // METODO PARA LA DESCARGA DE UN ARCHIVO
@@ -131,6 +131,7 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
         holder.myView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // SI ES DOCUMENTO PROCEDE A DESCARGARLO
                 if(message.getType().equals("documento")){
                     File file = new File(context.getExternalFilesDir(null), "file");
                     DownloadManager.Request request = new DownloadManager.Request(Uri.parse(message.getUrl()))
@@ -143,6 +144,12 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
 
                     DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
                     downloadManager.enqueue(request);
+                }
+                else if (message.getType().equals("imagen") || message.getType().equals("video")) {
+                    Intent intent = new Intent(context, ShowImageOrVideoActivity.class);
+                    intent.putExtra("type", message.getType());
+                    intent.putExtra("url", message.getUrl());
+                    context.startActivity(intent);
                 }
             }
         });
@@ -293,9 +300,6 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
             frameLayoutVideo = view.findViewById(R.id.frameLayoutVideo);
             viewVideo = view.findViewById(R.id.viewVideo);
             imageViewVideo = view.findViewById(R.id.imageViewVideo);
-
-
-
         }
     }
 

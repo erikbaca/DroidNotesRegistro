@@ -3,6 +3,7 @@ package com.proyecto.droidnotes.activities;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +26,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setStatusBarColor();
 
         mButtonSendCode = findViewById(R.id.btnSendCode);
         mEditTextPhone = findViewById(R.id.editTextPhone);
@@ -84,5 +86,14 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(MainActivity.this, CodeVerificationActivity.class);
         intent.putExtra("phone", phone);
         startActivity(intent);
+    }
+
+
+    private void setStatusBarColor(){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            getWindow().setStatusBarColor(getResources().getColor(R.color.colorFullBlack, this.getTheme()));
+        }else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP){
+            getWindow().setStatusBarColor(getResources().getColor(R.color.colorFullBlack));
+        }
     }
 }
