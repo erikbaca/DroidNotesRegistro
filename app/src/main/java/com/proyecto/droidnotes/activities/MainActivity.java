@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
 
+    // LA BARRA SUPOERIOR COLOREARLA DE COLOR NEGRO
     private void setStatusBarColor(){
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             getWindow().setStatusBarColor(getResources().getColor(R.color.colorFullBlack, this.getTheme()));

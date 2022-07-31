@@ -8,6 +8,9 @@ public class Chat {
     private long timestamp;
     private ArrayList<String>ids;
     private int idNotification;
+    private boolean isMultichat;
+    private String groupName;
+    private String  groupImage;
 
     // CONSTRUCTOR VACIO
     public Chat() {
@@ -15,11 +18,15 @@ public class Chat {
 
     //CONTRUCTOR CON LOS TRES CAMPOS
 
-    public Chat(String id, long timestamp, ArrayList<String> ids, int idNotification) {
+
+    public Chat(String id, long timestamp, ArrayList<String> ids, int idNotification, boolean isMultichat, String groupName, String groupImage) {
         this.id = id;
         this.timestamp = timestamp;
         this.ids = ids;
         this.idNotification = idNotification;
+        this.isMultichat = isMultichat;
+        this.groupName = groupName;
+        this.groupImage = groupImage;
     }
 
     public String getId() {
@@ -52,5 +59,29 @@ public class Chat {
 
     public void setIdNotification(int idNotification) {
         this.idNotification = idNotification;
+    }
+
+    public boolean isMultichat() {
+        return isMultichat;
+    }
+
+    public void setMultichat(boolean multichat) {
+        isMultichat = multichat;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
+    }
+
+    public String getGroupImage() {
+        return groupImage;
+    }
+
+    public void setGroupImage(String groupImage) {
+        this.groupImage = groupImage;
     }
 }

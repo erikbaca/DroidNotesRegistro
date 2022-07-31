@@ -20,8 +20,10 @@ import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.gson.Gson;
 import com.proyecto.droidnotes.R;
 import com.proyecto.droidnotes.activities.ChatActivity;
+import com.proyecto.droidnotes.activities.ChatMultiActivity;
 import com.proyecto.droidnotes.models.Chat;
 import com.proyecto.droidnotes.models.Message;
 import com.proyecto.droidnotes.models.User;
@@ -73,11 +75,30 @@ public class ChatsAdapter extends FirestoreRecyclerAdapter<Chat, ChatsAdapter.Vi
             }
         }
 
-        getLastMessage(holder, chat.getId());
-        // ACCEDEMOS A CADA UNA DE LAS VISTAS
-        getUserInfo(holder, idUser);
-        clickMyView(holder, chat.getId(),idUser);
 
+        getLastMessage(holder, chat.getId());
+
+        // ACCEDEMOS A CADA UNA DE LAS VISTAS
+        if (chat.isMultichat()){
+            getMultiChatInfo(holder, chat);
+        }
+        else {
+            getUserInfo(holder, idUser);
+        }
+
+        clickMyView(holder, chat, idUser);
+
+    }
+
+
+    private void getMultiChatInfo(ViewHolder holder, Chat chat) {
+        if (chat.getGroupImage() != null){
+            if (!chat.getGroupImage().equals("")){
+                Picasso.with(context).load(chat.getGroupImage()).into(holder.circleImageUser);
+            }
+        }
+
+        holder.textViewUsername.setText(chat.getGroupName());
     }
 
 
@@ -114,14 +135,29 @@ public class ChatsAdapter extends FirestoreRecyclerAdapter<Chat, ChatsAdapter.Vi
     }
 
 
-    private void clickMyView(ViewHolder holder, final String idChat , final String idUser) {
+    // METODO QUE NOS LLEVA A LA ACTIVIDAD DEL CHAT
+    private void clickMyView(ViewHolder holder, Chat chat , final String idUser) {
         //EVENTO CLICK HACIA EL CHAT DEL CONTACTO
         holder.myView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                goToChatActivity( idChat, idUser);
+                if (chat.isMultichat()){
+                    goToChatMultiActivity(chat);
+                }
+                else {
+                    goToChatActivity(chat.getId(), idUser);
+                }
             }
         });
+    }
+
+    // METODO PARA ENVIAR AL USUARIO AL CHAT DE MULTIPLES USUARIOS
+    private void goToChatMultiActivity(Chat chat) {
+        Intent intent = new Intent(context, ChatMultiActivity.class);
+        Gson gson = new Gson();
+        String chatJSON = gson.toJson(chat);
+        intent.putExtra("chat", chatJSON);
+        context.startActivity(intent);
     }
 
 

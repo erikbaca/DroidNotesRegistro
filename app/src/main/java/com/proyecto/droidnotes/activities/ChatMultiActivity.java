@@ -1,5 +1,6 @@
 package com.proyecto.droidnotes.activities;
 
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -12,8 +13,6 @@ import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
-import android.media.Image;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -36,11 +35,8 @@ import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.proyecto.droidnotes.R;
-import com.proyecto.droidnotes.adapters.ChatsAdapter;
 import com.proyecto.droidnotes.adapters.MessagesAdapter;
 import com.proyecto.droidnotes.models.Chat;
-import com.proyecto.droidnotes.models.FCMBody;
-import com.proyecto.droidnotes.models.FCMResponse;
 import com.proyecto.droidnotes.models.Message;
 import com.proyecto.droidnotes.models.User;
 import com.proyecto.droidnotes.providers.AuthProvider;
@@ -51,9 +47,6 @@ import com.proyecto.droidnotes.providers.NotificationProvider;
 import com.proyecto.droidnotes.providers.UsersProvider;
 import com.squareup.picasso.Picasso;
 
-import org.w3c.dom.Text;
-
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -62,13 +55,9 @@ import java.util.Map;
 import java.util.Random;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
-public class ChatActivity extends AppCompatActivity {
+public class ChatMultiActivity extends AppCompatActivity {
 
-    //////////////////////////////////// VARIABLES GLOBALES /////////////////////////////////////////
     String mExtraIdUser;
     String mExtraIdChat;
 
@@ -112,8 +101,12 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_chat);
+        setContentView(R.layout.activity_chat_multi);
         setStatusBarColor();
+
+        String chat = getIntent().getStringExtra("chat");
+        Gson gson = new Gson();
+        mChat = gson.fromJson(chat, Chat.class);
 
         // INSTANCIAS ==============================================================================
         mExtraIdUser = getIntent().getStringExtra("idUser");
@@ -137,7 +130,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
         // LA INFORMACION QUE SE MOSTRARA SE REFLEJARA UNA DEBAJO DEL OTRO
-        mLinearLayoutManager = new LinearLayoutManager(ChatActivity.this);
+        mLinearLayoutManager = new LinearLayoutManager(ChatMultiActivity.this);
         mLinearLayoutManager.setStackFromEnd(true);
         mRecyclerViewMessages.setLayoutManager(mLinearLayoutManager);
 
@@ -156,7 +149,6 @@ public class ChatActivity extends AppCompatActivity {
 
         // =========================================================================================
         showChatToolbar(R.layout.chat_toolbar);
-        getUserReceiverInfo();
         getMyUserInfo();
         checkIfExistChat();
 
@@ -243,7 +235,7 @@ public class ChatActivity extends AppCompatActivity {
     //INICIALIZA NUESTRA LIBRERIA PARA SELECCIONAR LA IMAGEN
     private void startPix()
     {
-        Pix.start(ChatActivity.this, mOptions);
+        Pix.start(ChatMultiActivity.this, mOptions);
     }
 
     // ========================================================================
@@ -337,7 +329,7 @@ public class ChatActivity extends AppCompatActivity {
         String messagesJSON = gson.toJson(messages);
 
         data.put("messagesJSON", messagesJSON);
-        mNotificationProvider.send(ChatActivity.this, mUserReceiver.getToken(), data);
+        mNotificationProvider.send(ChatMultiActivity.this, mUserReceiver.getToken(), data);
     }
 
     // METODO PARA VERIFICAR SI EL CHAT EXISTE
@@ -366,11 +358,11 @@ public class ChatActivity extends AppCompatActivity {
         mChatsProvider.getChatById(mExtraIdChat).addSnapshotListener(new EventListener<DocumentSnapshot>() {
             @Override
             public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException error) {
-            if (documentSnapshot != null){
-                if (documentSnapshot.exists()){
-                    mChat = documentSnapshot.toObject(Chat.class);
+                if (documentSnapshot != null){
+                    if (documentSnapshot.exists()){
+                        mChat = documentSnapshot.toObject(Chat.class);
+                    }
                 }
-            }
             }
         });
     }
@@ -400,7 +392,7 @@ public class ChatActivity extends AppCompatActivity {
                 .setQuery(query, Message.class)
                 .build();
 
-        mAdapter = new MessagesAdapter(options, ChatActivity.this);
+        mAdapter = new MessagesAdapter(options, ChatMultiActivity.this);
         mRecyclerViewMessages.setAdapter(mAdapter);
         // QUE EL ADAPTER ESCUCHE LOS CAMBIOS EN TIEMPO REAL
         mAdapter.startListening();
@@ -425,15 +417,13 @@ public class ChatActivity extends AppCompatActivity {
 
     private void createChat() {
         Random random = new Random();
-        int n = random.nextInt(100000);
-
+        int n = random.nextInt(300000);
         mChat = new Chat();
         mChat.setId(mAuthProvider.getId() + mExtraIdUser);
         mChat.setTimestamp(new Date().getTime());
         mChat.setIdNotification(n);
-
         ArrayList<String> ids = new ArrayList<>();
-        ids.add(mAuthProvider.getId());
+//        ids.add(mAuthProvider.getId());
         ids.add(mExtraIdUser);
 
         mChat.setIds(ids);
@@ -455,34 +445,9 @@ public class ChatActivity extends AppCompatActivity {
         mUsersProvider.getUserInfo(mAuthProvider.getId()).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-              if (documentSnapshot.exists()){
-                  mMyUser = documentSnapshot.toObject(User.class);
-              }
-            }
-        });
-    }
-
-
-
-    // VALIDACION EN TIEMPO REAL
-    private void getUserReceiverInfo() {
-        mUsersProvider.getUserInfo(mExtraIdUser).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException error) {
-                 if (documentSnapshot != null){
-                     if(documentSnapshot.exists()){
-                         //OBTENIENDO LA INFO DEL USUARIO
-                         mUserReceiver = documentSnapshot.toObject(User.class);
-                         mTextViewUsername.setText(mUserReceiver.getUsername());
-
-                         //MOSTRAR LA IMAGEN
-                         if (mUserReceiver.getImage() != null){
-                             if (!mUserReceiver.getImage().equals("")){
-                                 Picasso.with(ChatActivity.this).load(mUserReceiver.getImage()).into(mCircleImageUser);
-                             }
-                         }
-                     }
-                 }
+                if (documentSnapshot.exists()){
+                    mMyUser = documentSnapshot.toObject(User.class);
+                }
             }
         });
     }
@@ -507,6 +472,9 @@ public class ChatActivity extends AppCompatActivity {
         mTextViewUsername = view.findViewById(R.id.textViewUsername);
         mCircleImageUser = view.findViewById(R.id.circleImageUser);
 
+        Picasso.with(ChatMultiActivity.this).load(mChat.getGroupImage()).into(mCircleImageUser);
+        mTextViewUsername.setText(mChat.getGroupName());
+
         mImageViewBack.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -521,7 +489,7 @@ public class ChatActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK && requestCode == 100) {
             mReturnValues = data.getStringArrayListExtra(Pix.IMAGE_RESULTS);
-            Intent intent = new Intent(ChatActivity.this, ConfirmImageSendActivity.class);
+            Intent intent = new Intent(ChatMultiActivity.this, ConfirmImageSendActivity.class);
             intent.putExtra("data", mReturnValues);
             intent.putExtra("idChat", mExtraIdChat);
             intent.putExtra("idReceiver", mExtraIdUser);
@@ -554,7 +522,7 @@ public class ChatActivity extends AppCompatActivity {
                     mFileList.add(uri);
                 }
             }
-            mFilesProvider.saveFiles(ChatActivity.this, mFileList, mExtraIdChat, mExtraIdUser);
+            mFilesProvider.saveFiles(ChatMultiActivity.this, mFileList, mExtraIdChat, mExtraIdUser);
 
 
             // CREAMOS MODELO DE TIPO MESSAGE
@@ -586,9 +554,9 @@ public class ChatActivity extends AppCompatActivity {
         if(requestCode == PermUtil.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS) {
             // If request is cancelled, the result arrays are empty.
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Pix.start(ChatActivity.this, mOptions);
+                Pix.start(ChatMultiActivity.this, mOptions);
             } else {
-                Toast.makeText(ChatActivity.this, "Por favor concede los permisos para accesar a la camara!!", Toast.LENGTH_LONG).show();
+                Toast.makeText(ChatMultiActivity.this, "Por favor concede los permisos para accesar a la camara!!", Toast.LENGTH_LONG).show();
             }
         }
     }
