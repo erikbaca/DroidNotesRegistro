@@ -24,6 +24,7 @@ import com.fxn.utility.PermUtil;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.gson.Gson;
 import com.proyecto.droidnotes.R;
@@ -35,6 +36,9 @@ import com.proyecto.droidnotes.providers.StatusProvider;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 public class StatusFragment extends Fragment {
@@ -52,6 +56,8 @@ public class StatusFragment extends Fragment {
 
     ArrayList<Status> mNoRepeatStatusList;
     Gson mGson = new Gson();
+
+    ListenerRegistration mListener;
     //////////////////////////// CIERRE //////////////////////////////////////////////////
 
     public StatusFragment() {
@@ -93,14 +99,42 @@ public class StatusFragment extends Fragment {
         });
 
         getStatus();
+        setInterval();
 
         return mView;
+    }
+
+    private void setInterval() {
+        new Timer().scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                // RECORRIENDO CADA ESTADO DEL USUARIO EN UN INTERVALO DE UN MINUTOS Y PREGUNTAR SI EL TIEMPO LIMITE
+                // ES MENOR A NUESTRA HORA ACTUAL Y SI ES MENOR ENTONCES SE ACTUALIZAN LOS DATOS
+                if (mNoRepeatStatusList != null){
+                    for (int i=0; i < mNoRepeatStatusList.size(); i++){
+                        if (mNoRepeatStatusList.get(i).getJson() != null){
+                            Status[] statusGSON = mGson.fromJson(mNoRepeatStatusList.get(i).getJson(), Status[].class);
+
+                            for (int j = 0; j < statusGSON.length; j++){
+                                long now = new Date().getTime();
+                                if (now > statusGSON[j].getTimestampLimit()){
+                                    if (mListener != null){
+                                        mListener.remove();
+                                    }
+                                    getStatus();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }, 0, 60000);
     }
 
     // METODO QUE NOS DEVUELVE LOS ESTADOS DEPENDIENDO EL TIEMPO LIMITE
     private void getStatus() {
         // EVENTO PARA OBTENER LA INFORMACION EN TIEMPO REAL
-     mStatusProvider.getStatusByTimestampLimit().addSnapshotListener(new EventListener<QuerySnapshot>() {
+     mListener = mStatusProvider.getStatusByTimestampLimit().addSnapshotListener(new EventListener<QuerySnapshot>() {
          @Override
          public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException error) {
               if (querySnapshot != null){
@@ -148,6 +182,14 @@ public class StatusFragment extends Fragment {
               }
          }
      });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (mListener != null){
+            mListener.remove();
+        }
     }
 
     // INICIALIZA NUESTRA LIBRERIA PARA SELECCIONAR LA IMAGEN

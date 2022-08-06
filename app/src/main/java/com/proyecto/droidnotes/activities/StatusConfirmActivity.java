@@ -59,7 +59,7 @@ public class StatusConfirmActivity extends AppCompatActivity {
                 Status s = new Status();
                 long now = new Date().getTime();
                 // VENCIMIENTO DE TIEMPO 3 MINUTOS
-                long limit = now + (60 * 1000 * 20);
+                long limit = now + (60 * 1000 * 60 * 24);
                 s.setIdUser(mAuthProvider.getId());
                 s.setComment("");
                 s.setTimestamp(now);

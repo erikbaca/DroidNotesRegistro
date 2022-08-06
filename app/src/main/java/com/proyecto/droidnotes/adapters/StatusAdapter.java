@@ -25,6 +25,7 @@ import com.google.gson.Gson;
 import com.proyecto.droidnotes.R;
 import com.proyecto.droidnotes.activities.ChatActivity;
 import com.proyecto.droidnotes.activities.ChatMultiActivity;
+import com.proyecto.droidnotes.activities.StatusDetailActivity;
 import com.proyecto.droidnotes.models.Chat;
 import com.proyecto.droidnotes.models.Message;
 import com.proyecto.droidnotes.models.Status;
@@ -122,7 +123,7 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         Status[] statusGSON = gson.fromJson(statusList.get(position).getJson(), Status[].class);
 
         // ESTABLECEMOS LA LINEAS DEL ESTADO
@@ -130,6 +131,15 @@ public class StatusAdapter extends RecyclerView.Adapter<StatusAdapter.ViewHolder
 
         setImageStatus(statusGSON, holder);
         getUserInfo(holder, statusList.get(position).getIdUser());
+
+        holder.myView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(context, StatusDetailActivity.class);
+                intent.putExtra("status", statusList.get(position).getJson());
+                context.startActivity(intent);
+            }
+        });
 
     }
 
