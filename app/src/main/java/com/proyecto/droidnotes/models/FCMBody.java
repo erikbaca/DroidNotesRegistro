@@ -1,28 +1,22 @@
 package com.proyecto.droidnotes.models;
 
+import java.util.List;
 import java.util.Map;
 
 /////////////////////// INVCLUIMOS LOS CAMPOS QUE NECESITAMOS PARA LAS NOTIFICACIONES /////////////////////////////
 public class FCMBody {
 
-    private String to;
+    private List<String> registration_ids;
     private String priority;
     private String ttl;
     private Map< String, String> data;
 
-    public FCMBody(String to, String priority, String ttl, Map<String, String> data) {
-        this.to = to;
+
+    public FCMBody(List<String> registration_ids, String priority, String ttl, Map<String, String> data) {
+        this.registration_ids = registration_ids;
         this.priority = priority;
         this.ttl = ttl;
         this.data = data;
-    }
-
-    public String getTo() {
-        return to;
-    }
-
-    public void setTo(String to) {
-        this.to = to;
     }
 
     public String getPriority() {
@@ -47,5 +41,13 @@ public class FCMBody {
 
     public void setData(Map<String, String> data) {
         this.data = data;
+    }
+
+    public List<String> getRegistration_ids() {
+        return registration_ids;
+    }
+
+    public void setRegistration_ids(List<String> registration_ids) {
+        this.registration_ids = registration_ids;
     }
 }

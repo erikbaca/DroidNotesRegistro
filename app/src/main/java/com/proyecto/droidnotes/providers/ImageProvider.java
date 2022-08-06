@@ -14,6 +14,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.proyecto.droidnotes.models.Message;
+import com.proyecto.droidnotes.models.Status;
 import com.proyecto.droidnotes.utils.CompressorBitmapImage;
 import com.proyecto.droidnotes.utils.ExtensionFile;
 
@@ -24,15 +25,14 @@ import java.util.UUID;
 
 import javax.net.ssl.SSLEngineResult;
 
-import io.grpc.Status;
-
 public class ImageProvider {
 
     // VARIABLE GLOBALES ==========================================================================
     StorageReference mStorage;
     FirebaseStorage mFirebaseStorage;
-    int index = 0;
+    int index;
     MessagesProvider mMessageProvider;
+    StatusProvider mStatusProvider;
     // ============================================================================================
 
     public ImageProvider()
@@ -41,6 +41,7 @@ public class ImageProvider {
         mFirebaseStorage = FirebaseStorage.getInstance();
         mStorage = mFirebaseStorage.getReference();
         mMessageProvider = new MessagesProvider();
+        mStatusProvider = new StatusProvider();
         index = 0;
        // =================================================================
     }
@@ -78,36 +79,73 @@ public class ImageProvider {
             name = name + ".mp4";
         }
 
-            final StorageReference ref = mStorage.child(name);
-            // VERIFICAMOS SI YA SE TERMINO DE GUARDAR LA IMAGEN EN FIREBASE
-            ref.putFile(uri[index]).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+        final StorageReference ref = mStorage.child(name);
+        // VERIFICAMOS SI YA SE TERMINO DE GUARDAR LA IMAGEN EN FIREBASE
+        ref.putFile(uri[index]).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
 
-                    if (task.isSuccessful()){
-                        ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                            @Override
-                            // NOS DEVUELVE LA URL ASIGANDA POR FIREBASE A LA IMG
-                            public void onSuccess(Uri uri) {
-                                String url = uri.toString();
-                                messages.get(index).setUrl(url);
-                                mMessageProvider.create(messages.get(index));
-                                index++;
+                if (task.isSuccessful()){
+                    ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        // NOS DEVUELVE LA URL ASIGANDA POR FIREBASE A LA IMG
+                        public void onSuccess(Uri uri) {
+                            String url = uri.toString();
+                            messages.get(index).setUrl(url);
+                            mMessageProvider.create(messages.get(index));
+                            index++;
 
-                                if (index < messages.size()){
-                                    uploadMultiple(context, messages);
-                                }
+                            if (index < messages.size()){
+                                uploadMultiple(context, messages);
                             }
-                        });
+                        }
+                    });
 
-                    }else{
-                        Toast.makeText(context, "Hubo un error al almacenar la image!", Toast.LENGTH_SHORT).show();
-                    }
+                }else{
+                    Toast.makeText(context, "Hubo un error al almacenar la image!", Toast.LENGTH_SHORT).show();
                 }
-            });
+            }
+        });
 //        }
 
     }
+
+
+    public void uploadMultipleStatus(final Context context, final ArrayList<Status> statusList) {
+
+        Uri[] uri = new Uri[statusList.size()];
+        File file = CompressorBitmapImage.reduceImageSize(new File(statusList.get(index).getUrl()));
+
+        uri[index] = Uri.parse("file://" + file.getPath());
+        final StorageReference ref = mStorage.child(uri[index].getLastPathSegment());
+        ref.putFile(uri[index]).addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+
+                if (task.isSuccessful()) {
+                    ref.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            String url = uri.toString();
+                            statusList.get(index).setUrl(url);
+                            mStatusProvider.create(statusList.get(index));
+                            index++;
+
+                            if (index < statusList.size()) {
+                                uploadMultipleStatus(context, statusList);
+                            }
+                        }
+                    });
+                }
+                else {
+                    Toast.makeText(context, "Hubo un error al almacenar la imagen", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+    }
+
+
 
 
     // Metodo que nos retornara la URL de la imagen que guardaremos

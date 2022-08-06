@@ -97,7 +97,7 @@
               android:id="@+id/imageViewSend"
               android:layout_width="40dp"
               android:layout_height="40dp"
-              android:src="@mipmap/ic_send"/>
+              android:src="@mipmap/ic_send_blue1"/>
 
       </LinearLayout>
 

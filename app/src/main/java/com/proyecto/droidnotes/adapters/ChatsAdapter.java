@@ -208,6 +208,7 @@ public class ChatsAdapter extends FirestoreRecyclerAdapter<Chat, ChatsAdapter.Vi
         intent.putExtra("idUser", idUser);
         intent.putExtra("idChat", idChat);
         context.startActivity(intent);
+
     }
 
 

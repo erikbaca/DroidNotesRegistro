@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -81,7 +82,6 @@ public class ChatMultiActivity extends AppCompatActivity {
     ImageView mImageViewSelectPictures;
 
     // NOTIFICACIONES
-    User mUserReceiver;
     User mMyUser;
     // ==============
 
@@ -95,6 +95,11 @@ public class ChatMultiActivity extends AppCompatActivity {
     ArrayList<Uri> mFileList;
     final int ACTION_FILE = 2;
     Chat mChat;
+
+    ArrayList<String> mReceiversId = new ArrayList<>();
+    ArrayList<User> mReceivers = new ArrayList<>();
+    int mCount = 0;
+    String mReceiversName = "";
     /////////////////////////////////// CIERRE DE VARIABLES ////////////////////////////////////////
 
     /////////////////////////////////// INICIO DEL CREATE //////////////////////////////////////////
@@ -119,6 +124,13 @@ public class ChatMultiActivity extends AppCompatActivity {
         mMessageProvider = new MessagesProvider();
         mFilesProvider = new FilesProvider();
         mNotificationProvider = new NotificationProvider();
+
+        for (String id: mChat.getIds()){
+            if (!id.equals(mAuthProvider.getId())){
+                // AÑADOR AL ARREGLO TODOS LOS USUARIOS QUE PARTICIPAN EN EL CHAT MENOS MI USUARIO
+                mReceiversId.add(id);
+            }
+        }
 
         mEditextMessage = findViewById(R.id.editTextMessage);
         mImageViewSend = findViewById(R.id.imageViewSend);
@@ -150,6 +162,8 @@ public class ChatMultiActivity extends AppCompatActivity {
         // =========================================================================================
         showChatToolbar(R.layout.chat_toolbar);
         getMyUserInfo();
+        getReceiversInfo();
+
         checkIfExistChat();
 
 
@@ -178,6 +192,29 @@ public class ChatMultiActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    private void getReceiversInfo() {
+
+        // RECORREMOS LA LISTA DE LOS USUARIOS QUE ESTAN PARTICIPANDO  EN EL GRUPO
+        for (String id: mReceiversId){
+            mUsersProvider.getUserInfo(id).get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
+               User user = documentSnapshot.toObject(User.class);
+               mReceivers.add(user);
+               mCount++;
+
+
+               if (mCount == mReceiversId.size()){
+                   for (User u: mReceivers){
+                       mReceiversName = mReceiversName + u.getUsername() + ", ";
+                   }
+
+               }
+                }
+            });
+        }
     }
     ///////////////////////////// CIERRE DEL CREATE /////////////////////////////////////////////////
 
@@ -249,7 +286,7 @@ public class ChatMultiActivity extends AppCompatActivity {
             // CREAMOS MODELO DE TIPO MESSAGE
             Message message = new Message();
             // CHAT AL CUAL PERTENECEN LO MENSAJES QUE CREAREMOS
-            message.setIdChat(mExtraIdChat);
+            message.setIdChat(mChat.getId());
             // NUESTRO USUARIO YA QUE ESTAMOS ESCRIBIENDO EL MENSAJE Y ENVIANDOLO
             message.setIdSender(mAuthProvider.getId());
             // USUARIO DE RECIBE EL MENSAJE
@@ -261,7 +298,8 @@ public class ChatMultiActivity extends AppCompatActivity {
             message.setType("texto");
             // FECHA
             message.setTimestamp(new Date().getTime());
-
+            message.setReceivers(mReceiversId);
+            message.setUsername(mMyUser.getUsername());
             // VALIDAMOS QUE LA INFORMACION SE HAYA CREADO CORRECTAMENTE
             mMessageProvider.create(message).addOnSuccessListener(new OnSuccessListener<Void>() {
                 @Override
@@ -313,23 +351,29 @@ public class ChatMultiActivity extends AppCompatActivity {
         data.put("title", "MENSAJE");
         data.put("body", "texto mensaje");
         data.put("idNotification", String.valueOf(mChat.getIdNotification()));
-        data.put("usernameReceiver", mUserReceiver.getUsername());
+        data.put("usernameReceiver", "");
         data.put("usernameSender", mMyUser.getUsername());
-        data.put("imageReceiver", mUserReceiver.getImage());
+        data.put("imageReceiver", "");
         data.put("imageSender", mMyUser.getImage());
         data.put("idChat", mExtraIdChat);
         data.put("idSender", mAuthProvider.getId());
-        data.put("idReceiver", mUserReceiver.getId());
+        data.put("idReceiver", "");
         data.put("tokenSender", mMyUser.getToken());
-        data.put("tokenReceiver", mUserReceiver.getToken());
+        data.put("tokenReceiver", "");
 
 
         // CONVERTIR A UN OBJETO JSON
         Gson gson = new Gson();
         String messagesJSON = gson.toJson(messages);
-
         data.put("messagesJSON", messagesJSON);
-        mNotificationProvider.send(ChatMultiActivity.this, mUserReceiver.getToken(), data);
+
+        List<String> tokens = new ArrayList<>();
+
+        for (User u: mReceivers){
+            tokens.add(u.getToken());
+
+        }
+        mNotificationProvider.send(ChatMultiActivity.this, tokens, data);
     }
 
     // METODO PARA VERIFICAR SI EL CHAT EXISTE
@@ -346,21 +390,7 @@ public class ChatMultiActivity extends AppCompatActivity {
                         mExtraIdChat = queryDocumentSnapshots.getDocuments().get(0).getId();
                         getMessageByChat();
                         updateStatus();
-                        getChatInfo();
 //                        Toast.makeText(ChatActivity.this, "El chat ya existe entre estos dos usuarios", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            }
-        });
-    }
-
-    private void getChatInfo() {
-        mChatsProvider.getChatById(mExtraIdChat).addSnapshotListener(new EventListener<DocumentSnapshot>() {
-            @Override
-            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException error) {
-                if (documentSnapshot != null){
-                    if (documentSnapshot.exists()){
-                        mChat = documentSnapshot.toObject(Chat.class);
                     }
                 }
             }
@@ -384,10 +414,10 @@ public class ChatMultiActivity extends AppCompatActivity {
         });
     }
 
-    // METODO PARA OBTENER LOS MENSAJES
+    // METODO PARA OBTENER LOS MENSAJES DE LA BASE DE DATOS
     private void getMessageByChat() {
         // CONSULTA A LA BASE DE DATOS
-        Query query = mMessageProvider.getMessageByChat(mExtraIdChat);
+        Query query = mMessageProvider.getMessageByChat(mChat.getId());
         FirestoreRecyclerOptions<Message> options = new FirestoreRecyclerOptions.Builder<Message>()
                 .setQuery(query, Message.class)
                 .build();
@@ -496,10 +526,8 @@ public class ChatMultiActivity extends AppCompatActivity {
 
             Gson gson = new Gson();
             String myUserJSON = gson.toJson(mMyUser);
-            String receiverUserJSON = gson.toJson(mUserReceiver);
 
             intent.putExtra("myUser", myUserJSON);
-            intent.putExtra("receiverUser", receiverUserJSON);
             intent.putExtra("idNotification", String.valueOf(mChat.getIdNotification()));
             startActivity(intent);
         }

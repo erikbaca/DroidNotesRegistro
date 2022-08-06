@@ -11,6 +11,7 @@
     <color name="colorPrimary">#E9093275</color>
     <color name="colorPrimaryDark">#0A154C</color>
     <color name="colorAccent">#E98494AC</color>
+    <color name="colorBlueAccent">#E91066E6</color>
     <color name="colorGray">#BDBDBD</color>
     <color name="colorGrayLigth">#EAE5E5</color>
     <color name="colorGrayDark">#818080</color>

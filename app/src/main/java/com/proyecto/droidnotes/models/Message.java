@@ -1,6 +1,8 @@
 package com.proyecto.droidnotes.models;
 
 
+import java.util.ArrayList;
+
 public class Message {
 
     private String id;
@@ -12,6 +14,8 @@ public class Message {
     private String url;
     private String type;
     private String filename;
+    private String username;
+    private ArrayList<String> receivers;
     private long timestamp;
 
     //CONSTRUCTOR VACIO
@@ -19,7 +23,7 @@ public class Message {
 
     }
 
-    public Message(String id, String idSender, String idReceiver, String idChat, String message, String status, String url, String type, String filename, long timestamp) {
+    public Message(String id, String idSender, String idReceiver, String idChat, String message, String status, String url, String type, String filename, String username, ArrayList<String> receivers, long timestamp) {
         this.id = id;
         this.idSender = idSender;
         this.idReceiver = idReceiver;
@@ -29,6 +33,8 @@ public class Message {
         this.url = url;
         this.type = type;
         this.filename = filename;
+        this.username = username;
+        this.receivers = receivers;
         this.timestamp = timestamp;
     }
 
@@ -102,6 +108,22 @@ public class Message {
 
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public ArrayList<String> getReceivers() {
+        return receivers;
+    }
+
+    public void setReceivers(ArrayList<String> receivers) {
+        this.receivers = receivers;
     }
 
     public long getTimestamp() {

@@ -31,6 +31,7 @@ import com.squareup.picasso.Target;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ResponseReceiver extends BroadcastReceiver {
@@ -182,7 +183,11 @@ public class ResponseReceiver extends BroadcastReceiver {
 
         data.put("messagesJSON", messagesJSON);
         NotificationProvider notificationProvider= new NotificationProvider();
-        notificationProvider.send(context, tokenSender, data);
+
+        List<String> tokens = new ArrayList<>();
+        tokens.add(tokenSender);
+
+        notificationProvider.send(context, tokens, data);
     }
 
 

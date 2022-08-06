@@ -24,6 +24,7 @@ import com.proyecto.droidnotes.utils.ShadowTransformer;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ConfirmImageSendActivity extends AppCompatActivity {
@@ -166,9 +167,12 @@ public class ConfirmImageSendActivity extends AppCompatActivity {
         // CONVERTIR A UN OBJETO JSON
         Gson gson = new Gson();
         String messagesJSON = gson.toJson(messages);
-
         data.put("messagesJSON", messagesJSON);
-        mNotificationProvider.send(ConfirmImageSendActivity.this, mExtraReceiverUser.getToken(), data);
+
+        List<String> tokens = new ArrayList<>();
+        tokens.add(mExtraReceiverUser.getToken());
+
+        mNotificationProvider.send(ConfirmImageSendActivity.this, tokens, data);
     }
 
 

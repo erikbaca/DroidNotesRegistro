@@ -63,7 +63,7 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
     }
 
 
-    // ESTABLECEMOS LA INFORMACION
+    // ESTABLECEMOS LOS VALORES DE LAS VISTAS
     @Override
     protected void onBindViewHolder(@NonNull ViewHolder holder, int position, @NonNull final Message message) {
         //obtenemos el mensaje que queremos mostrar
@@ -117,6 +117,15 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
             holder.imageViewCheck.setVisibility(View.GONE);
             ViewGroup.MarginLayoutParams marginDate = (ViewGroup.MarginLayoutParams) holder.textViewDate.getLayoutParams();
             marginDate.rightMargin = 10;
+
+            // PREGUNTAR SI EL MENSAJE ES UNA MENSAJE DE UNA CHAT DE GRUPO
+            if (message.getReceivers() != null){
+                holder.textViewUsername.setVisibility(View.VISIBLE);
+                holder.textViewUsername.setText(message.getUsername());
+            }
+            else {
+                holder.textViewUsername.setVisibility(View.GONE);
+            }
         }
 
 
@@ -271,6 +280,7 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
     public class ViewHolder extends RecyclerView.ViewHolder {
         // VARIABLES ==========================================================================
         TextView textViewMessage, textViewDate;
+        TextView textViewUsername;
         ImageView imageViewCheck;
         LinearLayout linearLayoutMessage;
         LinearLayout linearLayoutDocument;
@@ -293,6 +303,7 @@ public class MessagesAdapter extends FirestoreRecyclerAdapter<Message, MessagesA
 
             textViewMessage = view.findViewById(R.id.textViewMessage);
             textViewDate = view.findViewById(R.id.textViewDate);
+            textViewUsername = view.findViewById(R.id.textViewUsername);
             imageViewCheck = view.findViewById(R.id.imageViewCheck);
             imageViewMessage = view.findViewById(R.id.imageViewMessage);
             linearLayoutMessage = view.findViewById(R.id.linearLayoutMessage);

@@ -58,6 +58,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -335,9 +336,12 @@ public class ChatActivity extends AppCompatActivity {
         // CONVERTIR A UN OBJETO JSON
         Gson gson = new Gson();
         String messagesJSON = gson.toJson(messages);
-
         data.put("messagesJSON", messagesJSON);
-        mNotificationProvider.send(ChatActivity.this, mUserReceiver.getToken(), data);
+
+        List<String> tokens = new ArrayList<>();
+        tokens.add(mUserReceiver.getToken());
+
+        mNotificationProvider.send(ChatActivity.this, tokens, data);
     }
 
     // METODO PARA VERIFICAR SI EL CHAT EXISTE

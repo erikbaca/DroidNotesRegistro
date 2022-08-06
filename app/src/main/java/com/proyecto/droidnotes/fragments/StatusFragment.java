@@ -1,66 +1,185 @@
 package com.proyecto.droidnotes.fragments;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.Toast;
 
+import com.fxn.pix.Options;
+import com.fxn.pix.Pix;
+import com.fxn.utility.PermUtil;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.gson.Gson;
 import com.proyecto.droidnotes.R;
+import com.proyecto.droidnotes.activities.ProfileActivity;
+import com.proyecto.droidnotes.activities.StatusConfirmActivity;
+import com.proyecto.droidnotes.adapters.StatusAdapter;
+import com.proyecto.droidnotes.models.Status;
+import com.proyecto.droidnotes.providers.StatusProvider;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link StatusFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
+import java.io.File;
+import java.util.ArrayList;
+
+
 public class StatusFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    ////////////////////////////// VARIABLES /////////////////////////////////////////////
+    View mView;
+    LinearLayout mLinearLayoutAddStatus;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    Options mOptions;
+    ArrayList<String> mReturnValues = new ArrayList<>();
+
+    RecyclerView mRecyclerView;
+    StatusAdapter mAdapter;
+    StatusProvider mStatusProvider;
+
+    ArrayList<Status> mNoRepeatStatusList;
+    Gson mGson = new Gson();
+    //////////////////////////// CIERRE //////////////////////////////////////////////////
 
     public StatusFragment() {
-        // Required empty public constructor
+
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment StatusFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static StatusFragment newInstance(String param1, String param2) {
-        StatusFragment fragment = new StatusFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_status, container, false);
+        mView = inflater.inflate(R.layout.fragment_status, container, false);
+        ///////////////////////// INSTANCIAS //////////////////////////////////////////////
+        mLinearLayoutAddStatus = mView.findViewById(R.id.linearLayoutAddStatus);
+        mRecyclerView = mView.findViewById(R.id.recyclerViewStatus);
+        mStatusProvider = new StatusProvider();
+
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext());
+        ///////////////////////// CIERRE INSTANCIAS ////////////////////////////////////////
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+
+        mOptions = Options.init()
+                .setRequestCode(100)                                           //Request code for activity results
+                .setCount(5)                                                   //Number of images to restict selection count
+                .setFrontfacing(false)                                         //Front Facing camera on start
+                .setPreSelectedUrls(mReturnValues)                            //Pre selected Image Urls
+                .setExcludeVideos(true)
+                .setSpanCount(4)                                               //Span count for gallery min 1 & max 5
+                .setMode(Options.Mode.All)                                     //Option to select only pictures or videos or both
+                .setVideoDurationLimitinSeconds(0)                            //Duration for video recording
+                .setScreenOrientation(Options.SCREEN_ORIENTATION_PORTRAIT)     //Orientaion
+                .setPath("/pix/images");
+
+        mLinearLayoutAddStatus.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startPix();
+            }
+        });
+
+        getStatus();
+
+        return mView;
     }
+
+    // METODO QUE NOS DEVUELVE LOS ESTADOS DEPENDIENDO EL TIEMPO LIMITE
+    private void getStatus() {
+        // EVENTO PARA OBTENER LA INFORMACION EN TIEMPO REAL
+     mStatusProvider.getStatusByTimestampLimit().addSnapshotListener(new EventListener<QuerySnapshot>() {
+         @Override
+         public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException error) {
+              if (querySnapshot != null){
+                  ArrayList<Status> statusList = new ArrayList<>();
+                  mNoRepeatStatusList = new ArrayList<>();
+
+                  //////////// AÑADIMOS TODOS LOS ELEMENTOS ENCONTRADOS EN LA CONSULTA A LA LISTA statusList //////////
+                  for (DocumentSnapshot d: querySnapshot.getDocuments()){
+                      Status s = d.toObject(Status.class);
+                      statusList.add(s);
+                  }
+
+                  // AÑADIR A LA LISTA NOREPEATLIST ELEMENTOS NO REPETIDOS
+                  for (Status status: statusList){
+                      boolean isFound = false;
+
+                      for (Status s: mNoRepeatStatusList){
+                          if (s.getIdUser().equals(status.getIdUser())){
+                              isFound = true;
+                              break;
+                          }
+                      }
+                      if (!isFound){
+                          mNoRepeatStatusList.add(status);
+                      }
+                  }
+
+                  //////////   ENCAPSULAREMOS TODOS LOS ESTADO QUE PUBLICAMOS EN LA BDD ////////////
+                  // AÑADIMOS A LA LISTA DE NO REPETIDOS TODOS LOS ESTADOS DE UN USUARIO (ID)
+                  for (Status noRepeat: mNoRepeatStatusList){
+                      ArrayList<Status> sList = new ArrayList<>();
+                      for (Status s: statusList){
+                          if (s.getIdUser().equals(noRepeat.getIdUser())){
+                              sList.add(s);
+                          }
+                      }
+                      String statusJSON = mGson.toJson(sList);
+                      Log.d("STATUS", "JSON:" + statusJSON);
+                      noRepeat.setJson(statusJSON);
+
+                  }
+                  //////////   CIERRE DEL ENCAPSULAMIENTO  ////////////////////////////////////////
+                  mAdapter = new StatusAdapter(getActivity(), mNoRepeatStatusList);
+                  mRecyclerView.setAdapter(mAdapter);
+              }
+         }
+     });
+    }
+
+    // INICIALIZA NUESTRA LIBRERIA PARA SELECCIONAR LA IMAGEN
+    public void startPix()
+    {
+        Pix.start(StatusFragment.this, mOptions);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK && requestCode == 100) {
+            mReturnValues = data.getStringArrayListExtra(Pix.IMAGE_RESULTS);
+            Intent intent = new Intent(getContext(), StatusConfirmActivity.class);
+            intent.putExtra("data", mReturnValues);
+            startActivity(intent);
+        }
+    }
+
+    // Metodo para los permisos a uso de la camara y accesar a la galeria
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode == PermUtil.REQUEST_CODE_ASK_MULTIPLE_PERMISSIONS) {
+            // If request is cancelled, the result arrays are empty.
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Pix.start(StatusFragment.this, mOptions);
+            } else {
+                Toast.makeText(getContext(), "Por favor concede los permisos para accesar a la camara!!", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+
 }
