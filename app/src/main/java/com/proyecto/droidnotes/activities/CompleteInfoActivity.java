@@ -36,7 +36,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class CompleteInfoActivity extends AppCompatActivity {
 
     // VARIABLES GLOBALES ==========================================================================
-    TextInputEditText mTextInputUsername;
+    TextInputEditText mTextInputUsername, mTextInputCuenta, mTextInputCorreo, mTextInputCarrera;
     Button mButtonConfirm;
     CircleImageView mCircleImagePhoto;
 
@@ -50,6 +50,9 @@ public class CompleteInfoActivity extends AppCompatActivity {
 
     File mImageFile;
     String mUsername = "";
+    String mUserCuenta = "";
+    String mUserCorreo = "";
+    String mUserCarrera = "";
 
     ProgressDialog mDialog;
 
@@ -61,6 +64,10 @@ public class CompleteInfoActivity extends AppCompatActivity {
         setContentView(R.layout.activity_complete_info);
 
         mTextInputUsername = findViewById(R.id.textInputUsername);
+        mTextInputCuenta = findViewById(R.id.textInputCuenta);
+        mTextInputCorreo = findViewById(R.id.textInputCorreo);
+        mTextInputCarrera = findViewById(R.id.textInputCarrera);
+
         mButtonConfirm = findViewById(R.id.btnConfirm);
         mCircleImagePhoto = findViewById(R.id.circleImagePhoto);
         mUsersProvider = new UsersProvider();
@@ -99,10 +106,17 @@ public class CompleteInfoActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 mUsername = mTextInputUsername.getText().toString();
-                if (!mUsername.equals("") && mImageFile != null) {
+                mUserCuenta = mTextInputCuenta.getText().toString();
+                mUserCorreo = mTextInputCorreo.getText().toString();
+                mUserCarrera = mTextInputCarrera.getText().toString();
+
+                if (!mUsername.equals("") &&
+                  !mUserCuenta.equals("") &&
+                  !mUserCorreo.equals("") &&
+                  !mUserCuenta.equals("") && mImageFile != null) {
                     saveImage();
                 } else {
-                    Toast.makeText(CompleteInfoActivity.this, "Debe de seleccionar la imagen y nombre de usuario", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CompleteInfoActivity.this, "Debe llenar toda la informacion", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -120,20 +134,34 @@ public class CompleteInfoActivity extends AppCompatActivity {
     // Actualizar info al momento de seleccionar confirmar -------------------------------
     private void updateUserInfo(String url) {
         mUsername = mTextInputUsername.getText().toString();
+        mUserCuenta = mTextInputCuenta.getText().toString();
+        mUserCorreo = mTextInputCorreo.getText().toString();
+        mUserCarrera = mTextInputCarrera.getText().toString();
 
         //Validar que el nombre de usuario no este vacio.
         User user = new User();
         user.setUsername(mUsername);
+        user.setAccount(mUserCuenta);
+        user.setEmail(mUserCorreo);
+        user.setCareer(mUserCarrera);
         user.setId(mAuthProvider.getId());
         user.setImage(url);
 
+
+        // INGRESO DE INFORMACION EN LA BDD //////////////////////////////////////////////////////////////////////////////////
         mUsersProvider.update(user).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void unused) {
-                goToHomeActivity();
+                mDialog.dismiss();
+                mUsersProvider.createToken(mAuthProvider.getId());
+                Toast.makeText(CompleteInfoActivity.this, "Se almaceno correctamente", Toast.LENGTH_LONG).show();
+                mAuthProvider.signOut();
+                Intent intent = new Intent(CompleteInfoActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
             }
         });
-
+        ///////////////////// OUT ///////////////////////////////////////////////////////////////////////////////////////////
     }
 
 

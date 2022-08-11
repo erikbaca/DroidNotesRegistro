@@ -3,9 +3,11 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/drawable/ic_person_pin.xml" value="0.127" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/action_bar_toolbar.xml" value="0.153125" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_chat.xml" value="0.15729166666666666" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_chat_multi.xml" value="0.15729166666666666" />
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_complete_info.xml" value="0.18" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_confirm_image_send.xml" value="0.153125" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_home.xml" value="0.153125" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_multi_confirm_image_send.xml" value="0.10833333333333334" />
@@ -13,7 +15,7 @@
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_status_confirm.xml" value="0.15729166666666666" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_status_detail.xml" value="0.15729166666666666" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/cardview_chats.xml" value="0.1" />
-        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/cardview_message.xml" value="0.153125" />
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/cardview_message.xml" value="0.18" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/cardview_status.xml" value="0.22" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/fragment_chats.xml" value="0.1" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/fragment_image_pager.xml" value="0.153125" />
