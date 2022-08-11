@@ -115,7 +115,7 @@ public class HomeActivity extends AppCompatActivity implements MaterialSearchBar
 
     // METODO PARA LA CREACION DEL TOKEN
     private void createToken() {
-        mUsersProvider.createToken(mAuthProvider.getId());
+
     }
 
     // METODO HACIA EL PERFIL

@@ -8,19 +8,25 @@ public class User {
     private String image;
     private String info;
     private String token;
+    private String email;
+    private String account;
+    private String career;
     private boolean isSelected;
 
     public User() {
 
     }
 
-    public User(String id, String username, String phone, String image, String info, String token, boolean isSelected) {
+    public User(String id, String username, String phone, String image, String info, String token, String email, String account, String career, boolean isSelected) {
         this.id = id;
         this.username = username;
         this.phone = phone;
         this.image = image;
         this.info = info;
         this.token = token;
+        this.email = email;
+        this.account = account;
+        this.career = career;
         this.isSelected = isSelected;
     }
 
@@ -70,6 +76,30 @@ public class User {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getAccount() {
+        return account;
+    }
+
+    public void setAccount(String account) {
+        this.account = account;
+    }
+
+    public String getCareer() {
+        return career;
+    }
+
+    public void setCareer(String career) {
+        this.career = career;
     }
 
     public boolean isSelected() {

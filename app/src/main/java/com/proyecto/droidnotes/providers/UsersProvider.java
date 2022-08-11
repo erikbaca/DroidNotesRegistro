@@ -47,6 +47,9 @@ public class UsersProvider {
     {
         Map<String, Object> map = new HashMap<>();
         map.put("username", user.getUsername());
+        map.put("account", user.getAccount());
+        map.put("email", user.getEmail());
+        map.put("career", user.getCareer());
         map.put("image", user.getImage());
 
         return mCollection.document(user.getId()).update(map);
