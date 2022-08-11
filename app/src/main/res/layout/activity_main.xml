@@ -15,8 +15,8 @@
 
         <ImageView
             android:layout_width="110dp"
-            android:layout_height="150dp"
-            android:src="@drawable/applogo"
+            android:layout_height="170dp"
+            android:src="@drawable/logo_droidnotesregister"
             android:layout_gravity="center"/>
 
 

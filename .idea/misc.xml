@@ -7,9 +7,10 @@
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/action_bar_toolbar.xml" value="0.153125" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_chat.xml" value="0.15729166666666666" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_chat_multi.xml" value="0.15729166666666666" />
-        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_complete_info.xml" value="0.18" />
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_complete_info.xml" value="0.1" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_confirm_image_send.xml" value="0.153125" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_home.xml" value="0.153125" />
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_main.xml" value="0.15729166666666666" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_multi_confirm_image_send.xml" value="0.10833333333333334" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_show_image_or_video.xml" value="0.1" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/activity_status_confirm.xml" value="0.15729166666666666" />
@@ -21,6 +22,7 @@
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/fragment_image_pager.xml" value="0.153125" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/fragment_status.xml" value="0.33" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/layout/fragment_status_pager.xml" value="0.15729166666666666" />
+        <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/mipmap-anydpi-v26/ic_logoappRegister.xml" value="0.1" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/ProyectoFinalPM/app/src/main/res/mipmap-anydpi-v26/ic_logoapp_round.xml" value="0.1145" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/drawable/bubble_corner_left.xml" value="0.111" />
         <entry key="..\:/Users/Dell/Desktop/Erik Baca/Movil-1/TercerParcial/ProyectoFinalPM/app/src/main/res/drawable/bubble_corner_rigth.xml" value="0.111" />

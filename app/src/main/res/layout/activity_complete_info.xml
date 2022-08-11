@@ -93,6 +93,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="cuenta de estudiante"
+                    android:inputType="number"
                     android:paddingLeft="5dp"/>
 
             </com.google.android.material.textfield.TextInputLayout>
@@ -124,6 +125,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="ingrese su correo"
+                    android:inputType="textEmailAddress"
                     android:paddingLeft="5dp"/>
 
             </com.google.android.material.textfield.TextInputLayout>
