@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         super.onStart();
         if (mAuthProvider.getSessionUser() != null)
         {
+            mAuthProvider.signOut();
             Intent intent = new Intent(MainActivity.this, HomeActivity.class);
             //ELIMINAR EL HISTORIAL DE VISTAS UNA VEZ EL USUARIO INGRESA A HOME-ACTIVITY
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
